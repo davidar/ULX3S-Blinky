@@ -3,6 +3,13 @@
 module top (
 	input clk_25mhz,
   output [3:0] gpdi_dp, gpdi_dn,
+  output led_o
+  );
+
+  // assign led_o = 1'b0;
+  blink blink_instance(
+      .clk_25mhz(clk_25mhz),
+      .led_o(led_o)
   );
 
   wire clk_25MHz, clk_250MHz;
