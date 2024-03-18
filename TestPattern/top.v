@@ -2,11 +2,8 @@
 
 module top (
 	input clk_25mhz,
-        output [3:0] gpdi_dp, gpdi_dn,
-	output wifi_gpio0);
-
-  // Tie gpio0 high, this keeps the board from rebooting
-  assign wifi_gpio0 = 1'b1;
+  output [3:0] gpdi_dp, gpdi_dn,
+  );
 
   wire clk_25MHz, clk_250MHz;
   clock clock_instance(
