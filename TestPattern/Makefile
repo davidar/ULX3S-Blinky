@@ -10,7 +10,7 @@ clean:
 	rm -f top.ys top.json colorlight_i9.config colorlight_i9.bit
 
 prog: colorlight_i9.bit
-	openFPGALoader -b colorlight-i9 -f colorlight_i9.bit
+	openFPGALoader -b colorlight-i9 colorlight_i9.bit
 
 top.ys: top.v llhdmi.v vgatestsrc.v TMDS_encoder.v clock.v OBUFDS.v
 	rm -f top.ys
