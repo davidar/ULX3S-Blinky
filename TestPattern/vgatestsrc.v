@@ -41,6 +41,7 @@ module	vgatestsrc(i_pixclk, i_reset,
 		// External connections
 		i_width, i_height,
 		i_rd, i_newline, i_newframe,
+		i_blink,
 		// VGA connections
 		o_pixel);
 	parameter	BITS_PER_COLOR = 4,
@@ -54,7 +55,7 @@ module	vgatestsrc(i_pixclk, i_reset,
 	input	wire	[HW-1:0]	i_width;
 	input	wire	[VW-1:0]	i_height;
 	//
-	input	wire		i_rd, i_newline, i_newframe;
+	input	wire		i_rd, i_newline, i_newframe, i_blink;
 	//
 	output	reg	[(BPP-1):0]	o_pixel;
 
@@ -233,7 +234,7 @@ module	vgatestsrc(i_pixclk, i_reset,
 	case(hfrac[FRACB-1:FRACB-4])
 	4'h0: gradient <= black;
 	// Red
-	4'h1: gradient <= { 1'b0, hfrac[(FRACB-5):(FRACB-3-BPC)], {(2){mid_off}} };
+	4'h1: gradient <= { i_blink, hfrac[(FRACB-5):(FRACB-3-BPC)], {(2){mid_off}} };
 	4'h2: gradient <= { 1'b1, hfrac[(FRACB-5):(FRACB-3-BPC)], {(2){mid_off}} };
 	4'h3: gradient <= black;
 	// Green
