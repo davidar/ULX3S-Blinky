@@ -276,41 +276,41 @@ module	vgatestsrc(i_pixclk, i_reset,
 	// endcase
 
 
+/* verilator lint_off UNUSEDSIGNAL */
 reg  signed  [15:0] B0 = 16'd0;
-reg  signed  [15:0] B1 = 16'd0;
+reg  signed  [31:0] B1 = 32'd0;
 reg  signed  [15:0] B2 = 16'd0;
-reg  signed  [15:0] B3 = 16'd0;
+reg  signed  [31:0] B3 = 32'd0;
 reg  signed  [15:0] Bm = 16'd0;
 reg  signed  [15:0] Bo = 16'd0;
-/* verilator lint_off UNUSEDSIGNAL */
 wire signed  [15:0] Go;
-/* verilator lint_on UNUSEDSIGNAL */
-reg  signed  [15:0] R0 = 16'd0;
-reg  signed  [15:0] R1 = 16'd0;
+reg  signed  [31:0] R0 = 32'd0;
+reg  signed  [31:0] R1 = 32'd0;
 reg  signed  [15:0] R2 = 16'd0;
-reg  signed  [15:0] R3 = 16'd0;
+reg  signed  [31:0] R3 = 32'd0;
 reg  signed  [15:0] Rm = 16'd0;
 reg  signed  [15:0] Ro = 16'd0;
 reg  signed  [15:0] c = 16'd0;
 reg  signed  [15:0] c1 = 16'd0;
 reg  signed  [15:0] d = 16'd0;
 wire signed  [15:0] h;
-reg  signed  [15:0] o = 16'd0;
-reg  signed  [15:0] o1 = 16'd0;
-reg  signed  [15:0] o2 = 16'd0;
-reg  signed  [15:0] p = 16'd0;
+reg  signed  [31:0] o = 32'd0;
+reg  signed  [31:0] o1 = 32'd0;
+reg  signed  [31:0] o2 = 32'd0;
+reg  signed  [31:0] p = 32'd0;
 reg  signed  [15:0] p1 = 16'd0;
-reg  signed  [15:0] q = 16'd0;
+reg  signed  [31:0] q = 32'd0;
 reg  signed  [15:0] r = 16'd0;
 reg  signed  [15:0] t = 16'd0;
 wire signed  [15:0] u;
 wire signed  [15:0] u2;
 wire signed  [15:0] v;
 wire signed  [15:0] v2;
-reg  signed  [15:0] w0 = 16'd0;
-reg  signed  [15:0] w1 = 16'd0;
+reg  signed  [31:0] w0 = 32'd0;
+reg  signed  [31:0] w1 = 32'd0;
 wire signed  [15:0] x;
 wire signed  [15:0] y;
+/* verilator lint_on UNUSEDSIGNAL */
 
 
 // assign video_colorbars_reset = (~video_colorbars_enable0);
@@ -361,20 +361,18 @@ always @(*) begin
 
 		// sky light / ambient occlusion
         o <= (q + $signed({1'd0, 10'd900}));
-        R1 <= ((R0 * o) >>> 4'd12);
+        R1 <= ((R0[15:0] * o) >>> 4'd12);
         B1 <= ((B0 * o) >>> 4'd12);
 
 		// sun/key light
         if ((p > (-q))) begin
             w1 <= ((p + q) >>> 2'd3);
-            Ro <= (R1 + w1);
-            Bo <= (B1 + w1);
+            Ro <= (R1[15:0] + w1[15:0]);
+            Bo <= (B1[15:0] + w1[15:0]);
         end else begin
-            Ro <= R1;
-            Bo <= B1;
+            Ro <= R1[15:0];
+            Bo <= B1[15:0];
         end
-		Ro <= 0;
-		Bo <= 0;
     end else begin
         if ((v < $signed({1'd0, 1'd0}))) begin  // ground
             R2 <= ($signed({1'd0, 8'd150}) + ($signed({1'd0, 2'd2}) * v));
@@ -397,11 +395,11 @@ always @(*) begin
             r <= (c + (u * v));
             d <= (($signed({1'd0, 12'd3200}) - h) - ($signed({1'd0, 2'd2}) * r));
             if ((d > $signed({1'd0, 1'd0}))) begin
-                Ro <= (R3 + d);
+                Ro <= (R3[7:0] + d);
             end else begin
-                Ro <= R3;
+                Ro <= R3[7:0];
             end
-            Bo <= B3;
+            Bo <= B3[7:0];
         end else begin  // sky
             c1 <= (x + ($signed({1'd0, 3'd4}) * y));
             Ro <= ($signed({1'd0, 8'd132}) + c1);

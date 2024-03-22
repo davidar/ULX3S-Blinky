@@ -21,7 +21,7 @@ CFLAGS = -g -Wall -I$(VINC) -I $(VDIRFB)
 # CFLAGS = -g -Wall -faligned-new -I$(VINC) -I $(VDIRFB)
 
 VERILATOR=verilator
-VFLAGS := -O3 -MMD --trace -Wall -Wno-WIDTHEXPAND -Wno-COMBDLY
+VFLAGS := -MMD --trace -Wall -Wno-WIDTHEXPAND -Wno-COMBDLY
 
 ## Find the directory containing the Verilog sources.  This is given from
 ## calling: "verilator -V" and finding the VERILATOR_ROOT output line from
