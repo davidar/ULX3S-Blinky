@@ -41,7 +41,7 @@ module	vgatestsrc(i_pixclk, i_reset,
 		// External connections
 		i_width, i_height,
 		i_rd, i_newline, i_newframe,
-		i_blink,
+		// i_blink,
 		// VGA connections
 		o_pixel);
 	parameter	BITS_PER_COLOR = 4,
@@ -55,39 +55,39 @@ module	vgatestsrc(i_pixclk, i_reset,
 	input	wire	[HW-1:0]	i_width;
 	input	wire	[VW-1:0]	i_height;
 	//
-	input	wire		i_rd, i_newline, i_newframe, i_blink;
+	input	wire		i_rd, i_newline, i_newframe;//, i_blink;
 	//
 	output	reg	[(BPP-1):0]	o_pixel;
 
 
 
-	wire	[BPP-1:0]	white, black, purplish_blue, purple, dark_gray,
-				darkest_gray, mid_white, mid_cyan, mid_magenta,
-				mid_red, mid_green, mid_blue, mid_yellow;
-	wire	[BPC-1:0]	midv, mid_off;
+	wire	[BPP-1:0]	white;//, black, purplish_blue, purple, dark_gray,
+	// 			darkest_gray, mid_white, mid_cyan, mid_magenta,
+	// 			mid_red, mid_green, mid_blue, mid_yellow;
+	// wire	[BPC-1:0]	midv, mid_off;
 
-	assign	midv    = { 2'b11, {(BPC-2){1'b0}} };
-	assign	mid_off = { (BPC){1'b0} };
+	// assign	midv    = { 2'b11, {(BPC-2){1'b0}} };
+	// assign	mid_off = { (BPC){1'b0} };
 
 	assign	white = {(BPP){1'b1}};
-	assign	black = {(BPP){1'b0}};
-	assign	purplish_blue = {
-				{(BPC){1'b0}},
-				3'b001,  {(BPC-3){1'b0}},
-				2'b01, {(BPC-2){1'b0}} };
-	assign	purple = { {2'b00, {(BPC-2){1'b1}} }, {(BPC){1'b0}},
-			{ 1'b0, {(BPC-1){1'b1}} } };
+	// assign	black = {(BPP){1'b0}};
+	// assign	purplish_blue = {
+	// 			{(BPC){1'b0}},
+	// 			3'b001,  {(BPC-3){1'b0}},
+	// 			2'b01, {(BPC-2){1'b0}} };
+	// assign	purple = { {2'b00, {(BPC-2){1'b1}} }, {(BPC){1'b0}},
+	// 		{ 1'b0, {(BPC-1){1'b1}} } };
 
-	assign	dark_gray    = {(3){  { 4'b0010, {(BPC-4){1'b0}} } }};
-	assign	darkest_gray = {(3){  { 4'b0001, {(BPC-4){1'b0}} } }};
+	// assign	dark_gray    = {(3){  { 4'b0010, {(BPC-4){1'b0}} } }};
+	// assign	darkest_gray = {(3){  { 4'b0001, {(BPC-4){1'b0}} } }};
 
-	assign	mid_white   = { midv,    midv,    midv    };
-	assign	mid_yellow  = { midv,    midv,    mid_off };
-	assign	mid_red     = { midv,    mid_off, mid_off };
-	assign	mid_green   = { mid_off, midv,    mid_off };
-	assign	mid_blue    = { mid_off, mid_off, midv    };
-	assign	mid_cyan    = { mid_off, midv,    midv    };
-	assign	mid_magenta = { midv,    mid_off, midv    };
+	// assign	mid_white   = { midv,    midv,    midv    };
+	// assign	mid_yellow  = { midv,    midv,    mid_off };
+	// assign	mid_red     = { midv,    mid_off, mid_off };
+	// assign	mid_green   = { mid_off, midv,    mid_off };
+	// assign	mid_blue    = { mid_off, mid_off, midv    };
+	// assign	mid_cyan    = { mid_off, midv,    midv    };
+	// assign	mid_magenta = { midv,    mid_off, midv    };
 
 	reg	[HW-1:0]	hpos, hedge;
 	reg	[VW-1:0]	ypos, yedge;
@@ -144,136 +144,136 @@ module	vgatestsrc(i_pixclk, i_reset,
 		end
 	end
 
-	reg	[BPP-1:0]	topbar, midbar, fatbar, gradient, pattern;
-	always @(posedge i_pixclk)
-	case(hbar[3:0])
-	4'h0: topbar <= black;
-	4'h1: topbar <= mid_white;
-	4'h2: topbar <= mid_white;
-	4'h3: topbar <= mid_yellow;
-	4'h4: topbar <= mid_yellow;
-	4'h5: topbar <= mid_cyan;
-	4'h6: topbar <= mid_cyan;
-	4'h7: topbar <= mid_green;
-	4'h8: topbar <= mid_green;
-	4'h9: topbar <= mid_magenta;
-	4'ha: topbar <= mid_magenta;
-	4'hb: topbar <= mid_red;
-	4'hc: topbar <= mid_red;
-	4'hd: topbar <= mid_blue;
-	4'he: topbar <= mid_blue;
-	4'hf: topbar <= black;
-	endcase
+	// reg	[BPP-1:0]	topbar, midbar, fatbar, gradient, pattern;
+	// always @(posedge i_pixclk)
+	// case(hbar[3:0])
+	// 4'h0: topbar <= black;
+	// 4'h1: topbar <= mid_white;
+	// 4'h2: topbar <= mid_white;
+	// 4'h3: topbar <= mid_yellow;
+	// 4'h4: topbar <= mid_yellow;
+	// 4'h5: topbar <= mid_cyan;
+	// 4'h6: topbar <= mid_cyan;
+	// 4'h7: topbar <= mid_green;
+	// 4'h8: topbar <= mid_green;
+	// 4'h9: topbar <= mid_magenta;
+	// 4'ha: topbar <= mid_magenta;
+	// 4'hb: topbar <= mid_red;
+	// 4'hc: topbar <= mid_red;
+	// 4'hd: topbar <= mid_blue;
+	// 4'he: topbar <= mid_blue;
+	// 4'hf: topbar <= black;
+	// endcase
 
-	always @(posedge i_pixclk)
-	case(hbar[3:0])
-	4'h0: midbar <= black;
-	4'h1: midbar <= mid_blue;
-	4'h2: midbar <= mid_blue;
-	4'h3: midbar <= black;
-	4'h4: midbar <= black;
-	4'h5: midbar <= mid_magenta;
-	4'h6: midbar <= mid_magenta;
-	4'h7: midbar <= black;
-	4'h8: midbar <= black;
-	4'h9: midbar <= mid_cyan;
-	4'ha: midbar <= mid_cyan;
-	4'hb: midbar <= black;
-	4'hc: midbar <= black;
-	4'hd: midbar <= mid_white;
-	4'he: midbar <= mid_white;
-	4'hf: midbar <= black;
-	endcase
+	// always @(posedge i_pixclk)
+	// case(hbar[3:0])
+	// 4'h0: midbar <= black;
+	// 4'h1: midbar <= mid_blue;
+	// 4'h2: midbar <= mid_blue;
+	// 4'h3: midbar <= black;
+	// 4'h4: midbar <= black;
+	// 4'h5: midbar <= mid_magenta;
+	// 4'h6: midbar <= mid_magenta;
+	// 4'h7: midbar <= black;
+	// 4'h8: midbar <= black;
+	// 4'h9: midbar <= mid_cyan;
+	// 4'ha: midbar <= mid_cyan;
+	// 4'hb: midbar <= black;
+	// 4'hc: midbar <= black;
+	// 4'hd: midbar <= mid_white;
+	// 4'he: midbar <= mid_white;
+	// 4'hf: midbar <= black;
+	// endcase
 
-	always @(posedge i_pixclk)
-	case(hbar[3:0])
-	4'h0: fatbar <= black;
-	4'h1: fatbar <= purplish_blue;
-	4'h2: fatbar <= purplish_blue;
-	4'h3: fatbar <= purplish_blue;
-	4'h4: fatbar <=	white;
-	4'h5: fatbar <= white;
-	4'h6: fatbar <= white;
-	4'h7: fatbar <= purple;
-	4'h8: fatbar <= purple;
-	4'h9: fatbar <= purple;
-	4'ha: fatbar <= darkest_gray;
-	4'hb: fatbar <= black;
-	4'hc: fatbar <= dark_gray;
-	4'hd: fatbar <= darkest_gray;
-	4'he: fatbar <= black;
-	4'hf: fatbar <= black;
-	endcase
+	// always @(posedge i_pixclk)
+	// case(hbar[3:0])
+	// 4'h0: fatbar <= black;
+	// 4'h1: fatbar <= purplish_blue;
+	// 4'h2: fatbar <= purplish_blue;
+	// 4'h3: fatbar <= purplish_blue;
+	// 4'h4: fatbar <=	white;
+	// 4'h5: fatbar <= white;
+	// 4'h6: fatbar <= white;
+	// 4'h7: fatbar <= purple;
+	// 4'h8: fatbar <= purple;
+	// 4'h9: fatbar <= purple;
+	// 4'ha: fatbar <= darkest_gray;
+	// 4'hb: fatbar <= black;
+	// 4'hc: fatbar <= dark_gray;
+	// 4'hd: fatbar <= darkest_gray;
+	// 4'he: fatbar <= black;
+	// 4'hf: fatbar <= black;
+	// endcase
 
-	reg	[(HW-1):0]	last_width;
-	always @(posedge i_pixclk)
-		last_width <= i_width;
+	// reg	[(HW-1):0]	last_width;
+	// always @(posedge i_pixclk)
+	// 	last_width <= i_width;
 
-	// Attempt to discover 1/i_width in h_step
-	localparam	FRACB=16;
-	//
-	reg	[(FRACB-1):0]	hfrac, h_step;
-	always @(posedge i_pixclk)
-	if ((i_reset)||(i_newline))
-		hfrac <= 0;
-	else if (i_rd)
-		hfrac <= hfrac + h_step;
+	// // Attempt to discover 1/i_width in h_step
+	// localparam	FRACB=16;
+	// //
+	// reg	[(FRACB-1):0]	hfrac, h_step;
+	// always @(posedge i_pixclk)
+	// if ((i_reset)||(i_newline))
+	// 	hfrac <= 0;
+	// else if (i_rd)
+	// 	hfrac <= hfrac + h_step;
 
-	always @(posedge i_pixclk)
-	if ((i_reset)||(i_width != last_width))
-		h_step <= 1;
-	else if ((i_newline)&&(hfrac > 0))
-	begin
-		if (hfrac < {(FRACB){1'b1}} - { {(FRACB-HW){1'b0}}, i_width })
-			h_step <= h_step + 1'b1;
-		else if (hfrac < { {(FRACB-HW){1'b0}}, i_width })
-			h_step <= h_step - 1'b1;
-	end
+	// always @(posedge i_pixclk)
+	// if ((i_reset)||(i_width != last_width))
+	// 	h_step <= 1;
+	// else if ((i_newline)&&(hfrac > 0))
+	// begin
+	// 	if (hfrac < {(FRACB){1'b1}} - { {(FRACB-HW){1'b0}}, i_width })
+	// 		h_step <= h_step + 1'b1;
+	// 	else if (hfrac < { {(FRACB-HW){1'b0}}, i_width })
+	// 		h_step <= h_step - 1'b1;
+	// end
 
-	always @(posedge i_pixclk)
-	case(hfrac[FRACB-1:FRACB-4])
-	4'h0: gradient <= black;
-	// Red
-	4'h1: gradient <= { i_blink, hfrac[(FRACB-5):(FRACB-3-BPC)], {(2){mid_off}} };
-	4'h2: gradient <= { 1'b1, hfrac[(FRACB-5):(FRACB-3-BPC)], {(2){mid_off}} };
-	4'h3: gradient <= black;
-	// Green
-	4'h4: gradient <= { mid_off, 1'b0, hfrac[(FRACB-5):(FRACB-3-BPC)], mid_off };
-	4'h5: gradient <= { mid_off, 1'b1, hfrac[(FRACB-5):(FRACB-3-BPC)], mid_off };
-	4'h6: gradient <= black;
-	// Blue
-	4'h7: gradient <= { {(2){mid_off}}, 1'b0, hfrac[(FRACB-5):(FRACB-3-BPC)] };
-	4'h8: gradient <= { {(2){mid_off}}, 1'b1, hfrac[(FRACB-5):(FRACB-3-BPC)] };
-	4'h9: gradient <= black;
-	// Gray
-	4'ha: gradient <= {(3){ 2'b00, hfrac[(FRACB-5):(FRACB-2-BPC)] }};
-	4'hb: gradient <= {(3){ 2'b01, hfrac[(FRACB-5):(FRACB-2-BPC)] }};
-	4'hc: gradient <= {(3){ 2'b10, hfrac[(FRACB-5):(FRACB-2-BPC)] }};
-	4'hd: gradient <= {(3){ 2'b11, hfrac[(FRACB-5):(FRACB-2-BPC)] }};
-	4'he: gradient <= black;
-	//
-	4'hf: gradient <= black;
-	endcase
+	// always @(posedge i_pixclk)
+	// case(hfrac[FRACB-1:FRACB-4])
+	// 4'h0: gradient <= black;
+	// // Red
+	// 4'h1: gradient <= { i_blink, hfrac[(FRACB-5):(FRACB-3-BPC)], {(2){mid_off}} };
+	// 4'h2: gradient <= { 1'b1, hfrac[(FRACB-5):(FRACB-3-BPC)], {(2){mid_off}} };
+	// 4'h3: gradient <= black;
+	// // Green
+	// 4'h4: gradient <= { mid_off, 1'b0, hfrac[(FRACB-5):(FRACB-3-BPC)], mid_off };
+	// 4'h5: gradient <= { mid_off, 1'b1, hfrac[(FRACB-5):(FRACB-3-BPC)], mid_off };
+	// 4'h6: gradient <= black;
+	// // Blue
+	// 4'h7: gradient <= { {(2){mid_off}}, 1'b0, hfrac[(FRACB-5):(FRACB-3-BPC)] };
+	// 4'h8: gradient <= { {(2){mid_off}}, 1'b1, hfrac[(FRACB-5):(FRACB-3-BPC)] };
+	// 4'h9: gradient <= black;
+	// // Gray
+	// 4'ha: gradient <= {(3){ 2'b00, hfrac[(FRACB-5):(FRACB-2-BPC)] }};
+	// 4'hb: gradient <= {(3){ 2'b01, hfrac[(FRACB-5):(FRACB-2-BPC)] }};
+	// 4'hc: gradient <= {(3){ 2'b10, hfrac[(FRACB-5):(FRACB-2-BPC)] }};
+	// 4'hd: gradient <= {(3){ 2'b11, hfrac[(FRACB-5):(FRACB-2-BPC)] }};
+	// 4'he: gradient <= black;
+	// //
+	// 4'hf: gradient <= black;
+	// endcase
 
-	always @(posedge i_pixclk)
-	case(yline)
-	4'h0: pattern <= black;
-	4'h1: pattern <= topbar; //
-	4'h2: pattern <= topbar;
-	4'h3: pattern <= topbar;
-	4'h4: pattern <= topbar;
-	4'h5: pattern <= topbar;
-	4'h6: pattern <= topbar;
-	4'h7: pattern <= topbar;
-	4'h8: pattern <= topbar;
-	4'h9: pattern <= midbar; //
-	4'ha: pattern <= fatbar; //
-	4'hb: pattern <= fatbar;
-	4'hc: pattern <= fatbar;
-	4'hd: pattern <= black;
-	4'he: pattern <= gradient;
-	4'hf: pattern <= black;
-	endcase
+	// always @(posedge i_pixclk)
+	// case(yline)
+	// 4'h0: pattern <= black;
+	// 4'h1: pattern <= topbar; //
+	// 4'h2: pattern <= topbar;
+	// 4'h3: pattern <= topbar;
+	// 4'h4: pattern <= topbar;
+	// 4'h5: pattern <= topbar;
+	// 4'h6: pattern <= topbar;
+	// 4'h7: pattern <= topbar;
+	// 4'h8: pattern <= topbar;
+	// 4'h9: pattern <= midbar; //
+	// 4'ha: pattern <= fatbar; //
+	// 4'hb: pattern <= fatbar;
+	// 4'hc: pattern <= fatbar;
+	// 4'hd: pattern <= black;
+	// 4'he: pattern <= gradient;
+	// 4'hf: pattern <= black;
+	// endcase
 
 
 reg  signed  [15:0] B0 = 16'd0;
@@ -282,7 +282,9 @@ reg  signed  [15:0] B2 = 16'd0;
 reg  signed  [15:0] B3 = 16'd0;
 reg  signed  [15:0] Bm = 16'd0;
 reg  signed  [15:0] Bo = 16'd0;
+/* verilator lint_off UNUSEDSIGNAL */
 wire signed  [15:0] Go;
+/* verilator lint_on UNUSEDSIGNAL */
 reg  signed  [15:0] R0 = 16'd0;
 reg  signed  [15:0] R1 = 16'd0;
 reg  signed  [15:0] R2 = 16'd0;
@@ -416,19 +418,21 @@ assign Go = (((Rm * $signed({1'd0, 4'd11})) + ($signed({1'd0, 3'd5}) * Bm)) >>> 
 // assign video_colorbars_source_payload_g = Go[7:0];
 // assign video_colorbars_source_payload_b = Bm[7:0];
 
+reg	[BPP-1:0]	pattern;
+assign pattern = {Rm[7:0], Go[7:0], Bm[7:0]};
+
 
 	always @(posedge i_pixclk)
 	if (i_newline)
 		o_pixel <= white;
 	else if (i_rd)
 	begin
-		// if (hpos == i_width-12'd3)
-		// 	o_pixel <= white;
-		// else if ((ypos == 0)||(ypos == i_height-1))
-		// 	o_pixel <= white;
-		// else
-		// 	o_pixel <= pattern;
-		o_pixel <= {Rm[7:0], Go[7:0], Bm[7:0]};
+		if (hpos == i_width-12'd3)
+			o_pixel <= white;
+		else if ((ypos == 0)||(ypos == i_height-1))
+			o_pixel <= white;
+		else
+			o_pixel <= pattern;
 	end
 
 endmodule

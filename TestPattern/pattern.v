@@ -43,7 +43,7 @@ module pattern(
       .i_pixclk(i_pixclk), .i_reset(reset),
       .i_width(640), .i_height(480),
       .i_rd(o_rd), .i_newline(o_newline), .i_newframe(o_newframe),
-      .i_blink(0),
+      // .i_blink(0),
       .o_pixel(pixel));
 
 endmodule

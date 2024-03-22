@@ -11,7 +11,8 @@ VCDFILE := $(TOPMOD).vcd
 SIMPROG := $(TOPMOD)_tb
 SIMFILE := $(SIMPROG).cpp
 VDIRFB  := ./obj_dir
-all: $(VCDFILE)
+# all: $(VCDFILE)
+all: sim
 
 GCC := g++
 CFLAGS = -g -Wall -I$(VINC) -I $(VDIRFB)
@@ -20,7 +21,7 @@ CFLAGS = -g -Wall -I$(VINC) -I $(VDIRFB)
 # CFLAGS = -g -Wall -faligned-new -I$(VINC) -I $(VDIRFB)
 
 VERILATOR=verilator
-VFLAGS := -O3 -MMD --trace -Wall -Wno-WIDTHEXPAND -Wno-COMBDLY -Wno-UNUSEDSIGNAL
+VFLAGS := -O3 -MMD --trace -Wall -Wno-WIDTHEXPAND -Wno-COMBDLY
 
 ## Find the directory containing the Verilog sources.  This is given from
 ## calling: "verilator -V" and finding the VERILATOR_ROOT output line from
@@ -43,14 +44,14 @@ VINC := $(VERILATOR_ROOT)/include
 # 		$(VINC)/verilated_vcd_c.cpp $(SIMFILE) $(COSIMS)	\
 # 		$(VDIRFB)/V$(TOPMOD)__ALL.a -o $(SIMPROG)
 
-$(SIMPROG): $(TOPMOD).v
+$(SIMPROG): $(TOPMOD).v llhdmi.v vgatestsrc.v $(SIMFILE)
 	$(VERILATOR) $(VFLAGS) -cc --top-module $(TOPMOD) $(VLOGFIL) --exe $(SIMFILE)
 	$(MAKE) --no-print-directory -C $(VDIRFB) -f V$(TOPMOD).mk
 	cp $(VDIRFB)/V$(TOPMOD) $(SIMPROG)
 
 test: $(VCDFILE)
 
-$(VCDFILE): $(SIMPROG)
+sim: $(SIMPROG)
 	./$(SIMPROG) > image.ppm
 	convert image.ppm image.png
 

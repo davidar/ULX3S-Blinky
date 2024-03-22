@@ -48,7 +48,7 @@ module top (
       .i_pixclk(clk_25MHz), .i_reset(reset),
       .i_width(640), .i_height(480),
       .i_rd(o_rd), .i_newline(o_newline), .i_newframe(o_newframe),
-      .i_blink(led_o),
+      // .i_blink(led_o),
       .o_pixel(pixel));
 
   OBUFDS OBUFDS_red(.I(o_red), .O(gpdi_dp[2]), .OB(gpdi_dn[2]));
