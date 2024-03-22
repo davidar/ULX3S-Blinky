@@ -345,10 +345,12 @@ always @(*) begin
     t <= 16'd0;
     w0 <= 16'd0;
     w1 <= 16'd0;
-    if ((h < $signed({1'd0, 8'd200}))) begin
+    if ((h < $signed({1'd0, 8'd200}))) begin  // sphere
         t <= ($signed({1'd0, 13'd5200}) + (h * $signed({1'd0, 4'd8})));
         p <= ((t * u) >>> 3'd7);
         q <= ((t * v) >>> 3'd7);
+
+		// bounce light
         w0 <= ($signed({1'd0, 5'd18}) + (((p * $signed({1'd0, 3'd5})) - (q * $signed({1'd0, 4'd13}))) >>> 4'd9));
         if ((w0 > $signed({1'd0, 1'd0}))) begin
             R0 <= ($signed({1'd0, 9'd420}) + (w0 * w0));
@@ -356,9 +358,13 @@ always @(*) begin
             R0 <= 9'd420;
         end
         B0 <= 10'd520;
+
+		// sky light / ambient occlusion
         o <= (q + $signed({1'd0, 10'd900}));
         R1 <= ((R0 * o) >>> 4'd12);
         B1 <= ((B0 * o) >>> 4'd12);
+
+		// sun/key light
         if ((p > (-q))) begin
             w1 <= ((p + q) >>> 2'd3);
             Ro <= (R1 + w1);
@@ -367,12 +373,16 @@ always @(*) begin
             Ro <= R1;
             Bo <= B1;
         end
+		Ro <= 0;
+		Bo <= 0;
     end else begin
-        if ((v < $signed({1'd0, 1'd0}))) begin
+        if ((v < $signed({1'd0, 1'd0}))) begin  // ground
             R2 <= ($signed({1'd0, 8'd150}) + ($signed({1'd0, 2'd2}) * v));
             B2 <= 6'd50;
             p1 <= (h + ($signed({1'd0, 4'd8}) * v2));
             c <= (($signed({1'd0, 8'd240}) * (-v)) - p1);
+
+			// sky light / ambient occlusion
             if ((c > $signed({1'd0, 11'd1200}))) begin
                 o1 <= (($signed({1'd0, 5'd25}) * c) >>> 2'd3);
                 o2 <= (((c * ($signed({1'd0, 13'd7840}) - o1)) >>> 4'd9) - $signed({1'd0, 14'd8560}));
@@ -382,6 +392,8 @@ always @(*) begin
                 R3 <= R2;
                 B3 <= B2;
             end
+
+			// sun/key light with soft shadow
             r <= (c + (u * v));
             d <= (($signed({1'd0, 12'd3200}) - h) - ($signed({1'd0, 2'd2}) * r));
             if ((d > $signed({1'd0, 1'd0}))) begin
@@ -390,7 +402,7 @@ always @(*) begin
                 Ro <= R3;
             end
             Bo <= B3;
-        end else begin
+        end else begin  // sky
             c1 <= (x + ($signed({1'd0, 3'd4}) * y));
             Ro <= ($signed({1'd0, 8'd132}) + c1);
             Bo <= ($signed({1'd0, 8'd192}) + c1);
