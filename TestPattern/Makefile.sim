@@ -3,8 +3,8 @@
 ##
 .PHONY: all
 #.DELETE_ON_ERROR:
-TOPMOD  := DVI_3x3
-TOPMOD  := llhdmi
+# TOPMOD  := DVI_3x3
+# TOPMOD  := llhdmi
 TOPMOD  := pattern
 VLOGFIL := $(TOPMOD).v
 VCDFILE := $(TOPMOD).vcd
@@ -26,26 +26,33 @@ VFLAGS := -O3 -MMD --trace -Wall
 ## calling: "verilator -V" and finding the VERILATOR_ROOT output line from
 ## within it.  From this VERILATOR_ROOT value, we can find all the components
 ## we need here--in particular, the verilator include directory
-VERILATOR_ROOT ?= $(shell bash -c '$(VERILATOR) -V|grep VERILATOR_ROOT | head -1 | sed -e "s/^.*=\s*//"')
+# VERILATOR_ROOT ?= $(shell bash -c '$(VERILATOR) -V|grep VERILATOR_ROOT | head -1 | sed -e "s/^.*=\s*//"')
+VERILATOR_ROOT ?= $(HOME)/oss-cad-suite/share/verilator
 ##
 ## The directory containing the verilator includes
 VINC := $(VERILATOR_ROOT)/include
 
-$(VDIRFB)/V$(TOPMOD).cpp: $(TOPMOD).v 
-	$(VERILATOR) $(VFLAGS) -cc --top-module $(TOPMOD) $(VLOGFIL)
+# $(VDIRFB)/V$(TOPMOD).cpp: $(TOPMOD).v 
+# 	$(VERILATOR) $(VFLAGS) -cc --top-module $(TOPMOD) $(VLOGFIL)
 
-$(VDIRFB)/V$(TOPMOD)__ALL.a: $(VDIRFB)/V$(TOPMOD).cpp
-	make --no-print-directory -C $(VDIRFB) -f V$(TOPMOD).mk
+# $(VDIRFB)/V$(TOPMOD)__ALL.a: $(VDIRFB)/V$(TOPMOD).cpp
+# 	make --no-print-directory -C $(VDIRFB) -f V$(TOPMOD).mk
 
-$(SIMPROG): $(SIMFILE) $(VDIRFB)/V$(TOPMOD)__ALL.a $(COSIMS)
-	$(GCC) $(CFLAGS) $(VINC)/verilated.cpp				\
-		$(VINC)/verilated_vcd_c.cpp $(SIMFILE) $(COSIMS)	\
-		$(VDIRFB)/V$(TOPMOD)__ALL.a -o $(SIMPROG)
+# $(SIMPROG): $(SIMFILE) $(VDIRFB)/V$(TOPMOD)__ALL.a $(COSIMS)
+# 	$(GCC) $(CFLAGS) $(VINC)/verilated.cpp				\
+# 		$(VINC)/verilated_vcd_c.cpp $(SIMFILE) $(COSIMS)	\
+# 		$(VDIRFB)/V$(TOPMOD)__ALL.a -o $(SIMPROG)
+
+$(SIMPROG): $(TOPMOD).v
+	$(VERILATOR) $(VFLAGS) -cc --top-module $(TOPMOD) $(VLOGFIL) --exe $(SIMFILE)
+	$(MAKE) --no-print-directory -C $(VDIRFB) -f V$(TOPMOD).mk
+	cp $(VDIRFB)/V$(TOPMOD) $(SIMPROG)
 
 test: $(VCDFILE)
 
 $(VCDFILE): $(SIMPROG)
 	./$(SIMPROG) > image.ppm
+	convert image.ppm image.png
 
 ## 
 .PHONY: clean
