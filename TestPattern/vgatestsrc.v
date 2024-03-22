@@ -275,17 +275,160 @@ module	vgatestsrc(i_pixclk, i_reset,
 	4'hf: pattern <= black;
 	endcase
 
+
+reg  signed  [15:0] B0 = 16'd0;
+reg  signed  [15:0] B1 = 16'd0;
+reg  signed  [15:0] B2 = 16'd0;
+reg  signed  [15:0] B3 = 16'd0;
+reg  signed  [15:0] Bm = 16'd0;
+reg  signed  [15:0] Bo = 16'd0;
+wire signed  [15:0] Go;
+reg  signed  [15:0] R0 = 16'd0;
+reg  signed  [15:0] R1 = 16'd0;
+reg  signed  [15:0] R2 = 16'd0;
+reg  signed  [15:0] R3 = 16'd0;
+reg  signed  [15:0] Rm = 16'd0;
+reg  signed  [15:0] Ro = 16'd0;
+reg  signed  [15:0] c = 16'd0;
+reg  signed  [15:0] c1 = 16'd0;
+reg  signed  [15:0] d = 16'd0;
+wire signed  [15:0] h;
+reg  signed  [15:0] o = 16'd0;
+reg  signed  [15:0] o1 = 16'd0;
+reg  signed  [15:0] o2 = 16'd0;
+reg  signed  [15:0] p = 16'd0;
+reg  signed  [15:0] p1 = 16'd0;
+reg  signed  [15:0] q = 16'd0;
+reg  signed  [15:0] r = 16'd0;
+reg  signed  [15:0] t = 16'd0;
+wire signed  [15:0] u;
+wire signed  [15:0] u2;
+wire signed  [15:0] v;
+wire signed  [15:0] v2;
+reg  signed  [15:0] w0 = 16'd0;
+reg  signed  [15:0] w1 = 16'd0;
+wire signed  [15:0] x;
+wire signed  [15:0] y;
+
+
+// assign video_colorbars_reset = (~video_colorbars_enable0);
+assign x = hpos[10:3];
+assign y = ypos[10:3];
+assign u = (x - $signed({1'd0, 6'd36}));
+assign v = ($signed({1'd0, 5'd18}) - y);
+assign u2 = (u * u);
+assign v2 = (v * v);
+assign h = (u2 + v2);
+always @(*) begin
+    B0 <= 16'd0;
+    B1 <= 16'd0;
+    B2 <= 16'd0;
+    B3 <= 16'd0;
+    Bo <= 16'd0;
+    R0 <= 16'd0;
+    R1 <= 16'd0;
+    R2 <= 16'd0;
+    R3 <= 16'd0;
+    Ro <= 16'd0;
+    c <= 16'd0;
+    c1 <= 16'd0;
+    d <= 16'd0;
+    o <= 16'd0;
+    o1 <= 16'd0;
+    o2 <= 16'd0;
+    p <= 16'd0;
+    p1 <= 16'd0;
+    q <= 16'd0;
+    r <= 16'd0;
+    t <= 16'd0;
+    w0 <= 16'd0;
+    w1 <= 16'd0;
+    if ((h < $signed({1'd0, 8'd200}))) begin
+        t <= ($signed({1'd0, 13'd5200}) + (h * $signed({1'd0, 4'd8})));
+        p <= ((t * u) >>> 3'd7);
+        q <= ((t * v) >>> 3'd7);
+        w0 <= ($signed({1'd0, 5'd18}) + (((p * $signed({1'd0, 3'd5})) - (q * $signed({1'd0, 4'd13}))) >>> 4'd9));
+        if ((w0 > $signed({1'd0, 1'd0}))) begin
+            R0 <= ($signed({1'd0, 9'd420}) + (w0 * w0));
+        end else begin
+            R0 <= 9'd420;
+        end
+        B0 <= 10'd520;
+        o <= (q + $signed({1'd0, 10'd900}));
+        R1 <= ((R0 * o) >>> 4'd12);
+        B1 <= ((B0 * o) >>> 4'd12);
+        if ((p > (-q))) begin
+            w1 <= ((p + q) >>> 2'd3);
+            Ro <= (R1 + w1);
+            Bo <= (B1 + w1);
+        end else begin
+            Ro <= R1;
+            Bo <= B1;
+        end
+    end else begin
+        if ((v < $signed({1'd0, 1'd0}))) begin
+            R2 <= ($signed({1'd0, 8'd150}) + ($signed({1'd0, 2'd2}) * v));
+            B2 <= 6'd50;
+            p1 <= (h + ($signed({1'd0, 4'd8}) * v2));
+            c <= (($signed({1'd0, 8'd240}) * (-v)) - p1);
+            if ((c > $signed({1'd0, 11'd1200}))) begin
+                o1 <= (($signed({1'd0, 5'd25}) * c) >>> 2'd3);
+                o2 <= (((c * ($signed({1'd0, 13'd7840}) - o1)) >>> 4'd9) - $signed({1'd0, 14'd8560}));
+                R3 <= ((R2 * o2) >>> 4'd10);
+                B3 <= ((B2 * o2) >>> 4'd10);
+            end else begin
+                R3 <= R2;
+                B3 <= B2;
+            end
+            r <= (c + (u * v));
+            d <= (($signed({1'd0, 12'd3200}) - h) - ($signed({1'd0, 2'd2}) * r));
+            if ((d > $signed({1'd0, 1'd0}))) begin
+                Ro <= (R3 + d);
+            end else begin
+                Ro <= R3;
+            end
+            Bo <= B3;
+        end else begin
+            c1 <= (x + ($signed({1'd0, 3'd4}) * y));
+            Ro <= ($signed({1'd0, 8'd132}) + c1);
+            Bo <= ($signed({1'd0, 8'd192}) + c1);
+        end
+    end
+end
+always @(*) begin
+    Rm <= 16'd0;
+    if ((Ro > $signed({1'd0, 8'd255}))) begin
+        Rm <= 8'd255;
+    end else begin
+        Rm <= Ro;
+    end
+end
+always @(*) begin
+    Bm <= 16'd0;
+    if ((Bo > $signed({1'd0, 8'd255}))) begin
+        Bm <= 8'd255;
+    end else begin
+        Bm <= Bo;
+    end
+end
+assign Go = (((Rm * $signed({1'd0, 4'd11})) + ($signed({1'd0, 3'd5}) * Bm)) >>> 3'd4);
+// assign video_colorbars_source_payload_r = Rm[7:0];
+// assign video_colorbars_source_payload_g = Go[7:0];
+// assign video_colorbars_source_payload_b = Bm[7:0];
+
+
 	always @(posedge i_pixclk)
 	if (i_newline)
 		o_pixel <= white;
 	else if (i_rd)
 	begin
-		if (hpos == i_width-12'd3)
-			o_pixel <= white;
-		else if ((ypos == 0)||(ypos == i_height-1))
-			o_pixel <= white;
-		else
-			o_pixel <= pattern;
+		// if (hpos == i_width-12'd3)
+		// 	o_pixel <= white;
+		// else if ((ypos == 0)||(ypos == i_height-1))
+		// 	o_pixel <= white;
+		// else
+		// 	o_pixel <= pattern;
+		o_pixel <= {Rm[7:0], Go[7:0], Bm[7:0]};
 	end
 
 endmodule
