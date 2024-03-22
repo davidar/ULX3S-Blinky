@@ -1,9 +1,17 @@
 `default_nettype none
 
-module pattern(input i_tmdsclk, i_pixclk, output red, grn, blu, o_rd,
-	o_TMDS_red, o_TMDS_grn, o_TMDS_blu);
+module pattern(
+  input i_tmdsclk,
+  input i_pixclk,
+  output [7:0] red,
+  output [7:0] grn,
+  output [7:0] blu,
+  output o_rd,
+	output [9:0] o_TMDS_red,
+  output [9:0] o_TMDS_grn,
+  output [9:0] o_TMDS_blu
+  );
 
-  wire [7:0] red, grn, blu;
   wire [23:0] pixel;
   assign red= pixel[23:16];
   assign grn= pixel[15:8];
@@ -13,9 +21,8 @@ module pattern(input i_tmdsclk, i_pixclk, output red, grn, blu, o_rd,
   wire o_red;
   wire o_grn;
   wire o_blu;
-  wire [9:0] o_TMDS_red, o_TMDS_grn, o_TMDS_blu;
 /* verilator lint_on UNUSED */
-  wire o_rd, o_newline, o_newframe;
+  wire o_newline, o_newframe;
 
   // A reset line that goes low after 16 ticks
   reg [2:0] reset_cnt = 0;
@@ -36,6 +43,7 @@ module pattern(input i_tmdsclk, i_pixclk, output red, grn, blu, o_rd,
       .i_pixclk(i_pixclk), .i_reset(reset),
       .i_width(640), .i_height(480),
       .i_rd(o_rd), .i_newline(o_newline), .i_newframe(o_newframe),
+      .i_blink(0),
       .o_pixel(pixel));
 
 endmodule
