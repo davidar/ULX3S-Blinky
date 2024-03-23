@@ -38,12 +38,27 @@ module pattern(
     .o_TMDS_red(o_TMDS_red), .o_TMDS_grn(o_TMDS_grn), .o_TMDS_blu(o_TMDS_blu),
     .o_red(o_red), .o_grn(o_grn), .o_blu(o_blu));
 
-  vgatestsrc #(.BITS_PER_COLOR(8))
-    vgatestsrc_instance(
-      .i_pixclk(i_pixclk), .i_reset(reset),
-      .i_width(640), .i_height(480),
-      .i_rd(o_rd), .i_newline(o_newline), .i_newframe(o_newframe),
-      // .i_blink(0),
-      .o_pixel(pixel));
+
+  reg	[11:0] hcount, vcount;
+
+  always @(posedge i_pixclk)
+  if (reset || o_newframe)
+    vcount <= 0;
+  else if (o_newline)
+    vcount <= vcount + 1'b1;
+
+  always @(posedge i_pixclk)
+  if (reset || o_newline)
+    hcount <= 0;
+  else if (o_rd)
+    hcount <= hcount + 1'b1;
+
+  shader shader_instance(
+    .hcount(hcount),
+    .vcount(vcount),
+    .red(pixel[23:16]),
+    .green(pixel[15:8]),
+    .blue(pixel[7:0])
+  );
 
 endmodule

@@ -47,7 +47,7 @@ VINC := $(VERILATOR_ROOT)/include
 shader.v: shader.py
 	./shader.py > shader.v
 
-$(SIMPROG): $(TOPMOD).v llhdmi.v vgatestsrc.v shader.v $(SIMFILE)
+$(SIMPROG): $(TOPMOD).v llhdmi.v shader.v $(SIMFILE)
 	$(VERILATOR) $(VFLAGS) -cc --top-module $(TOPMOD) $(VLOGFIL) --exe $(SIMFILE)
 	$(MAKE) --no-print-directory -C $(VDIRFB) -f V$(TOPMOD).mk
 	cp $(VDIRFB)/V$(TOPMOD) $(SIMPROG)
