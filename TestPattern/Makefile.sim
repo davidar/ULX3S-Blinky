@@ -21,7 +21,7 @@ CFLAGS = -g -Wall -I$(VINC) -I $(VDIRFB)
 # CFLAGS = -g -Wall -faligned-new -I$(VINC) -I $(VDIRFB)
 
 VERILATOR=verilator
-VFLAGS := -MMD --trace -Wall -Wno-WIDTHEXPAND -Wno-COMBDLY
+VFLAGS := -MMD --trace -Wall -Wno-WIDTHEXPAND -Wno-COMBDLY -Wno-UNUSEDSIGNAL -Wno-INITIALDLY
 
 ## Find the directory containing the Verilog sources.  This is given from
 ## calling: "verilator -V" and finding the VERILATOR_ROOT output line from
@@ -44,7 +44,10 @@ VINC := $(VERILATOR_ROOT)/include
 # 		$(VINC)/verilated_vcd_c.cpp $(SIMFILE) $(COSIMS)	\
 # 		$(VDIRFB)/V$(TOPMOD)__ALL.a -o $(SIMPROG)
 
-$(SIMPROG): $(TOPMOD).v llhdmi.v vgatestsrc.v $(SIMFILE)
+shader.v: shader.py
+	./shader.py > shader.v
+
+$(SIMPROG): $(TOPMOD).v llhdmi.v vgatestsrc.v shader.v $(SIMFILE)
 	$(VERILATOR) $(VFLAGS) -cc --top-module $(TOPMOD) $(VLOGFIL) --exe $(SIMFILE)
 	$(MAKE) --no-print-directory -C $(VDIRFB) -f V$(TOPMOD).mk
 	cp $(VDIRFB)/V$(TOPMOD) $(SIMPROG)

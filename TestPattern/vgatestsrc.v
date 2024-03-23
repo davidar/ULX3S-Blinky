@@ -312,7 +312,7 @@ wire signed  [15:0] x;
 wire signed  [15:0] y;
 /* verilator lint_on UNUSEDSIGNAL */
 
-
+/*
 // assign video_colorbars_reset = (~video_colorbars_enable0);
 assign x = hpos[10:3];
 assign y = ypos[10:3];
@@ -430,6 +430,16 @@ assign Go = (((Rm * $signed({1'd0, 4'd11})) + ($signed({1'd0, 3'd5}) * Bm)) >>> 
 
 reg	[BPP-1:0]	pattern;
 assign pattern = {Rm[7:0], Go[7:0], Bm[7:0]};
+*/
+
+	reg	[BPP-1:0] pattern;
+	shader shader_instance(
+		.hcount(hpos),
+		.vcount(ypos),
+		.red(pattern[23:16]),
+		.green(pattern[15:8]),
+		.blue(pattern[7:0])
+	);
 
 
 	always @(posedge i_pixclk)
