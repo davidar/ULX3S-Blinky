@@ -71,7 +71,7 @@ module pattern(
   //     input   reset);
   PanoCore PanoCore_instance(
     .io_pix_x(hcount),
-    .io_pix_y(vcount),
+    .io_pix_y(480 - vcount - 1),
     .io_pixel_out_r(pixel[23:16]),
     .io_pixel_out_g(pixel[15:8]),
     .io_pixel_out_b(pixel[7:0]),

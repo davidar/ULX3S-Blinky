@@ -1,5 +1,5 @@
 // Generator : SpinalHDL v1.3.0    git head : a4aa217960e9fd6394cc93913205fac49fac47d4
-// Date      : 24/03/2024, 20:51:13
+// Date      : 24/03/2024, 21:28:25
 // Component : PanoCore
 
 
@@ -15190,7 +15190,7 @@ module PanoCore (
   assign rt_ray_dir_rot_x_z_sign = rt_u_ray_dir_rot_x_io_result_z_sign;
   assign rt_ray_dir_rot_x_z_exp = rt_u_ray_dir_rot_x_io_result_z_exp;
   assign rt_ray_dir_rot_x_z_mant = rt_u_ray_dir_rot_x_io_result_z_mant;
-  assign rt_rot_y_sin_sign = 1'b0;
+  assign rt_rot_y_sin_sign = 1'b1;
   assign rt_rot_y_sin_exp = (6'b011100);
   assign rt_rot_y_sin_mant = (13'b0101111000100);
   assign rt_rot_y_cos_sign = 1'b0;
