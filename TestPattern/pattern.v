@@ -53,12 +53,30 @@ module pattern(
   else if (o_rd)
     hcount <= hcount + 1'b1;
 
-  shader shader_instance(
-    .hcount(hcount),
-    .vcount(vcount),
-    .red(pixel[23:16]),
-    .green(pixel[15:8]),
-    .blue(pixel[7:0])
+  // shader shader_instance(
+  //   .hcount(hcount),
+  //   .vcount(vcount),
+  //   .red(pixel[23:16]),
+  //   .green(pixel[15:8]),
+  //   .blue(pixel[7:0])
+  // );
+
+  // module PanoCore (
+  //     input  [11:0] io_pix_x,
+  //     input  [10:0] io_pix_y,
+  //     output [7:0] io_pixel_out_r,
+  //     output [7:0] io_pixel_out_g,
+  //     output [7:0] io_pixel_out_b,
+  //     input   clk,
+  //     input   reset);
+  PanoCore PanoCore_instance(
+    .io_pix_x(hcount),
+    .io_pix_y(vcount),
+    .io_pixel_out_r(pixel[23:16]),
+    .io_pixel_out_g(pixel[15:8]),
+    .io_pixel_out_b(pixel[7:0]),
+    .clk(i_pixclk),
+    .reset(reset)
   );
 
 endmodule
