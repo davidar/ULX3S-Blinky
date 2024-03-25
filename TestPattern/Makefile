@@ -8,7 +8,7 @@ clean:
 prog: colorlight_i9.bit
 	openFPGALoader -b colorlight-i9 colorlight_i9.bit
 
-top.json: top.v llhdmi.v shader.v TMDS_encoder.v clock.v OBUFDS.v blink.v rst_gen.v
+top.json: top.v llhdmi.v PanoCore.v TMDS_encoder.v clock.v OBUFDS.v blink.v rst_gen.v
 	yosys -p "synth_ecp5 -json $@" $^
 
 colorlight_i9.config: top.json
