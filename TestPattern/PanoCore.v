@@ -1,5 +1,5 @@
 // Generator : SpinalHDL v1.3.0    git head : a4aa217960e9fd6394cc93913205fac49fac47d4
-// Date      : 24/03/2024, 21:28:25
+// Date      : 25/03/2024, 18:17:57
 // Component : PanoCore
 
 
@@ -4403,6 +4403,20 @@ endmodule
 module CamSweep (
       input  [11:0] io_pix_x,
       input  [10:0] io_pix_y,
+      input   io_pixel_in_vsync,
+      input   io_pixel_in_req,
+      input   io_pixel_in_eol,
+      input   io_pixel_in_eof,
+      input  [7:0] io_pixel_in_pixel_r,
+      input  [7:0] io_pixel_in_pixel_g,
+      input  [7:0] io_pixel_in_pixel_b,
+      output  io_pixel_out_vsync,
+      output  io_pixel_out_req,
+      output  io_pixel_out_eol,
+      output  io_pixel_out_eof,
+      output [7:0] io_pixel_out_pixel_r,
+      output [7:0] io_pixel_out_pixel_g,
+      output [7:0] io_pixel_out_pixel_b,
       output  io_ray_origin_x_sign,
       output [5:0] io_ray_origin_x_exp,
       output [12:0] io_ray_origin_x_mant,
@@ -4445,7 +4459,7 @@ module CamSweep (
   wire  incrY_sign;
   wire [5:0] incrY_exp;
   wire [12:0] incrY_mant;
-  wire  pix_vld;
+  reg  pix_vld;
   wire  pix_fp_vld;
   wire  pix_x_fp_sign;
   wire [5:0] pix_x_fp_exp;
@@ -4464,6 +4478,41 @@ module CamSweep (
   wire  dir_y_sign;
   wire [5:0] dir_y_exp;
   wire [12:0] dir_y_mant;
+  reg  io_pixel_in_delay_1_vsync;
+  reg  io_pixel_in_delay_1_req;
+  reg  io_pixel_in_delay_1_eol;
+  reg  io_pixel_in_delay_1_eof;
+  reg [7:0] io_pixel_in_delay_1_pixel_r;
+  reg [7:0] io_pixel_in_delay_1_pixel_g;
+  reg [7:0] io_pixel_in_delay_1_pixel_b;
+  reg  io_pixel_in_delay_2_vsync;
+  reg  io_pixel_in_delay_2_req;
+  reg  io_pixel_in_delay_2_eol;
+  reg  io_pixel_in_delay_2_eof;
+  reg [7:0] io_pixel_in_delay_2_pixel_r;
+  reg [7:0] io_pixel_in_delay_2_pixel_g;
+  reg [7:0] io_pixel_in_delay_2_pixel_b;
+  reg  io_pixel_in_delay_3_vsync;
+  reg  io_pixel_in_delay_3_req;
+  reg  io_pixel_in_delay_3_eol;
+  reg  io_pixel_in_delay_3_eof;
+  reg [7:0] io_pixel_in_delay_3_pixel_r;
+  reg [7:0] io_pixel_in_delay_3_pixel_g;
+  reg [7:0] io_pixel_in_delay_3_pixel_b;
+  reg  io_pixel_in_delay_4_vsync;
+  reg  io_pixel_in_delay_4_req;
+  reg  io_pixel_in_delay_4_eol;
+  reg  io_pixel_in_delay_4_eof;
+  reg [7:0] io_pixel_in_delay_4_pixel_r;
+  reg [7:0] io_pixel_in_delay_4_pixel_g;
+  reg [7:0] io_pixel_in_delay_4_pixel_b;
+  reg  pixel_in_delayed_vsync;
+  reg  pixel_in_delayed_req;
+  reg  pixel_in_delayed_eol;
+  reg  pixel_in_delayed_eof;
+  reg [7:0] pixel_in_delayed_pixel_r;
+  reg [7:0] pixel_in_delayed_pixel_g;
+  reg [7:0] pixel_in_delayed_pixel_b;
   SInt2Fpxx u_pix_x_fp ( 
     .p0_vld(pix_vld),
     .op_p0(io_pix_x),
@@ -4520,7 +4569,6 @@ module CamSweep (
   assign incrY_sign = 1'b0;
   assign incrY_exp = (6'b010110);
   assign incrY_mant = (13'b0001000100010);
-  assign pix_vld = 1'b1;
   assign pix_fp_vld = u_pix_x_fp_io_result_vld;
   assign pix_x_fp_sign = u_pix_x_fp_io_result_sign;
   assign pix_x_fp_exp = u_pix_x_fp_io_result_exp;
@@ -4557,7 +4605,559 @@ module CamSweep (
   assign io_ray_direction_z_sign = 1'b0;
   assign io_ray_direction_z_exp = (6'b011111);
   assign io_ray_direction_z_mant = (13'b0000000000000);
+  assign io_pixel_out_vsync = pixel_in_delayed_vsync;
+  assign io_pixel_out_req = pixel_in_delayed_req;
+  assign io_pixel_out_eol = pixel_in_delayed_eol;
+  assign io_pixel_out_eof = pixel_in_delayed_eof;
+  assign io_pixel_out_pixel_r = pixel_in_delayed_pixel_r;
+  assign io_pixel_out_pixel_g = pixel_in_delayed_pixel_g;
+  assign io_pixel_out_pixel_b = pixel_in_delayed_pixel_b;
+  always @ (posedge clk or posedge reset) begin
+    if (reset) begin
+      pix_vld <= 1'b0;
+    end else begin
+      pix_vld <= io_pixel_in_req;
+    end
+  end
+
+  always @ (posedge clk) begin
+    io_pixel_in_delay_1_vsync <= io_pixel_in_vsync;
+    io_pixel_in_delay_1_req <= io_pixel_in_req;
+    io_pixel_in_delay_1_eol <= io_pixel_in_eol;
+    io_pixel_in_delay_1_eof <= io_pixel_in_eof;
+    io_pixel_in_delay_1_pixel_r <= io_pixel_in_pixel_r;
+    io_pixel_in_delay_1_pixel_g <= io_pixel_in_pixel_g;
+    io_pixel_in_delay_1_pixel_b <= io_pixel_in_pixel_b;
+    io_pixel_in_delay_2_vsync <= io_pixel_in_delay_1_vsync;
+    io_pixel_in_delay_2_req <= io_pixel_in_delay_1_req;
+    io_pixel_in_delay_2_eol <= io_pixel_in_delay_1_eol;
+    io_pixel_in_delay_2_eof <= io_pixel_in_delay_1_eof;
+    io_pixel_in_delay_2_pixel_r <= io_pixel_in_delay_1_pixel_r;
+    io_pixel_in_delay_2_pixel_g <= io_pixel_in_delay_1_pixel_g;
+    io_pixel_in_delay_2_pixel_b <= io_pixel_in_delay_1_pixel_b;
+    io_pixel_in_delay_3_vsync <= io_pixel_in_delay_2_vsync;
+    io_pixel_in_delay_3_req <= io_pixel_in_delay_2_req;
+    io_pixel_in_delay_3_eol <= io_pixel_in_delay_2_eol;
+    io_pixel_in_delay_3_eof <= io_pixel_in_delay_2_eof;
+    io_pixel_in_delay_3_pixel_r <= io_pixel_in_delay_2_pixel_r;
+    io_pixel_in_delay_3_pixel_g <= io_pixel_in_delay_2_pixel_g;
+    io_pixel_in_delay_3_pixel_b <= io_pixel_in_delay_2_pixel_b;
+    io_pixel_in_delay_4_vsync <= io_pixel_in_delay_3_vsync;
+    io_pixel_in_delay_4_req <= io_pixel_in_delay_3_req;
+    io_pixel_in_delay_4_eol <= io_pixel_in_delay_3_eol;
+    io_pixel_in_delay_4_eof <= io_pixel_in_delay_3_eof;
+    io_pixel_in_delay_4_pixel_r <= io_pixel_in_delay_3_pixel_r;
+    io_pixel_in_delay_4_pixel_g <= io_pixel_in_delay_3_pixel_g;
+    io_pixel_in_delay_4_pixel_b <= io_pixel_in_delay_3_pixel_b;
+    pixel_in_delayed_vsync <= io_pixel_in_delay_4_vsync;
+    pixel_in_delayed_req <= io_pixel_in_delay_4_req;
+    pixel_in_delayed_eol <= io_pixel_in_delay_4_eol;
+    pixel_in_delayed_eof <= io_pixel_in_delay_4_eof;
+    pixel_in_delayed_pixel_r <= io_pixel_in_delay_4_pixel_r;
+    pixel_in_delayed_pixel_g <= io_pixel_in_delay_4_pixel_g;
+    pixel_in_delayed_pixel_b <= io_pixel_in_delay_4_pixel_b;
+  end
+
 endmodule
+
+module SInt2Fpxx_2_ (
+      input   p0_vld,
+      input  [15:0] op_p0,
+      output  io_result_vld,
+      output  io_result_sign,
+      output [5:0] io_result_exp,
+      output [12:0] io_result_mant,
+      input   clk,
+      input   reset);
+  wire [1:0] _zz_38_;
+  wire [1:0] _zz_39_;
+  wire [1:0] _zz_40_;
+  wire [1:0] _zz_41_;
+  wire [1:0] _zz_42_;
+  wire [1:0] _zz_43_;
+  wire [1:0] _zz_44_;
+  wire [1:0] _zz_45_;
+  wire [1:0] _zz_46_;
+  wire [1:0] _zz_47_;
+  wire [1:0] _zz_48_;
+  wire [1:0] _zz_49_;
+  wire [1:0] _zz_50_;
+  wire [1:0] _zz_51_;
+  wire [1:0] _zz_52_;
+  wire [15:0] _zz_53_;
+  wire [15:0] _zz_54_;
+  wire [0:0] _zz_55_;
+  wire [0:0] _zz_56_;
+  wire [0:0] _zz_57_;
+  wire [0:0] _zz_58_;
+  wire [0:0] _zz_59_;
+  wire [0:0] _zz_60_;
+  wire [0:0] _zz_61_;
+  wire [0:0] _zz_62_;
+  wire [0:0] _zz_63_;
+  wire [0:0] _zz_64_;
+  wire [0:0] _zz_65_;
+  wire [0:0] _zz_66_;
+  wire [0:0] _zz_67_;
+  wire [0:0] _zz_68_;
+  wire [0:0] _zz_69_;
+  wire [0:0] _zz_70_;
+  wire [0:0] _zz_71_;
+  wire [0:0] _zz_72_;
+  wire [0:0] _zz_73_;
+  wire [0:0] _zz_74_;
+  wire [0:0] _zz_75_;
+  wire [0:0] _zz_76_;
+  wire [1:0] _zz_77_;
+  wire [1:0] _zz_78_;
+  wire [1:0] _zz_79_;
+  wire [0:0] _zz_80_;
+  wire [0:0] _zz_81_;
+  wire [0:0] _zz_82_;
+  wire [0:0] _zz_83_;
+  wire [0:0] _zz_84_;
+  wire [0:0] _zz_85_;
+  wire [0:0] _zz_86_;
+  wire [0:0] _zz_87_;
+  wire [0:0] _zz_88_;
+  wire [0:0] _zz_89_;
+  wire [0:0] _zz_90_;
+  wire [0:0] _zz_91_;
+  wire [0:0] _zz_92_;
+  wire [0:0] _zz_93_;
+  wire [0:0] _zz_94_;
+  wire [0:0] _zz_95_;
+  wire [0:0] _zz_96_;
+  wire [0:0] _zz_97_;
+  wire [0:0] _zz_98_;
+  wire [0:0] _zz_99_;
+  wire [0:0] _zz_100_;
+  wire [0:0] _zz_101_;
+  wire [1:0] _zz_102_;
+  wire [1:0] _zz_103_;
+  wire [1:0] _zz_104_;
+  wire [2:0] _zz_105_;
+  wire [2:0] _zz_106_;
+  wire [2:0] _zz_107_;
+  wire [4:0] _zz_108_;
+  wire [5:0] _zz_109_;
+  wire  sign_p0;
+  wire [15:0] op_abs_p0;
+  reg  p1_vld;
+  reg  sign_p1;
+  reg [15:0] op_abs_p1;
+  wire [15:0] _zz_1_;
+  wire [7:0] _zz_2_;
+  wire [3:0] _zz_3_;
+  wire [1:0] _zz_4_;
+  reg [1:0] _zz_5_;
+  wire [1:0] _zz_6_;
+  reg [1:0] _zz_7_;
+  wire [1:0] _zz_8_;
+  reg [2:0] _zz_9_;
+  wire [3:0] _zz_10_;
+  wire [1:0] _zz_11_;
+  reg [1:0] _zz_12_;
+  wire [1:0] _zz_13_;
+  reg [1:0] _zz_14_;
+  wire [1:0] _zz_15_;
+  reg [2:0] _zz_16_;
+  wire [2:0] _zz_17_;
+  reg [3:0] _zz_18_;
+  wire [7:0] _zz_19_;
+  wire [3:0] _zz_20_;
+  wire [1:0] _zz_21_;
+  reg [1:0] _zz_22_;
+  wire [1:0] _zz_23_;
+  reg [1:0] _zz_24_;
+  wire [1:0] _zz_25_;
+  reg [2:0] _zz_26_;
+  wire [3:0] _zz_27_;
+  wire [1:0] _zz_28_;
+  reg [1:0] _zz_29_;
+  wire [1:0] _zz_30_;
+  reg [1:0] _zz_31_;
+  wire [1:0] _zz_32_;
+  reg [2:0] _zz_33_;
+  wire [2:0] _zz_34_;
+  reg [3:0] _zz_35_;
+  wire [3:0] _zz_36_;
+  reg [4:0] _zz_37_;
+  wire [3:0] lz_p1;
+  reg  p2_vld;
+  reg  sign_p2;
+  reg [15:0] op_abs_p2;
+  reg [3:0] lz_p2;
+  wire [15:0] op_adj_p2;
+  reg  sign_final_p2;
+  reg [5:0] exp_final_p2;
+  reg [12:0] mant_final_p2;
+  assign _zz_38_ = {_zz_55_[0],_zz_56_[0]};
+  assign _zz_39_ = {_zz_59_[0],_zz_60_[0]};
+  assign _zz_40_ = {_zz_5_[1],_zz_8_[1]};
+  assign _zz_41_ = {_zz_66_[0],_zz_67_[0]};
+  assign _zz_42_ = {_zz_70_[0],_zz_71_[0]};
+  assign _zz_43_ = {_zz_12_[1],_zz_15_[1]};
+  assign _zz_44_ = {_zz_9_[2],_zz_17_[2]};
+  assign _zz_45_ = {_zz_80_[0],_zz_81_[0]};
+  assign _zz_46_ = {_zz_84_[0],_zz_85_[0]};
+  assign _zz_47_ = {_zz_22_[1],_zz_25_[1]};
+  assign _zz_48_ = {_zz_91_[0],_zz_92_[0]};
+  assign _zz_49_ = {_zz_95_[0],_zz_96_[0]};
+  assign _zz_50_ = {_zz_29_[1],_zz_32_[1]};
+  assign _zz_51_ = {_zz_26_[2],_zz_34_[2]};
+  assign _zz_52_ = {_zz_18_[3],_zz_36_[3]};
+  assign _zz_53_ = (sign_p0 ? _zz_54_ : op_p0);
+  assign _zz_54_ = (- op_p0);
+  assign _zz_55_ = _zz_4_[1 : 1];
+  assign _zz_56_ = _zz_57_;
+  assign _zz_57_ = _zz_58_;
+  assign _zz_58_ = _zz_4_[0:0];
+  assign _zz_59_ = _zz_6_[1 : 1];
+  assign _zz_60_ = _zz_61_;
+  assign _zz_61_ = _zz_62_;
+  assign _zz_62_ = _zz_6_[0:0];
+  assign _zz_63_ = _zz_5_[0:0];
+  assign _zz_64_ = _zz_8_[0:0];
+  assign _zz_65_ = _zz_5_[0:0];
+  assign _zz_66_ = _zz_11_[1 : 1];
+  assign _zz_67_ = _zz_68_;
+  assign _zz_68_ = _zz_69_;
+  assign _zz_69_ = _zz_11_[0:0];
+  assign _zz_70_ = _zz_13_[1 : 1];
+  assign _zz_71_ = _zz_72_;
+  assign _zz_72_ = _zz_73_;
+  assign _zz_73_ = _zz_13_[0:0];
+  assign _zz_74_ = _zz_12_[0:0];
+  assign _zz_75_ = _zz_15_[0:0];
+  assign _zz_76_ = _zz_12_[0:0];
+  assign _zz_77_ = _zz_9_[1:0];
+  assign _zz_78_ = _zz_17_[1:0];
+  assign _zz_79_ = _zz_9_[1:0];
+  assign _zz_80_ = _zz_21_[1 : 1];
+  assign _zz_81_ = _zz_82_;
+  assign _zz_82_ = _zz_83_;
+  assign _zz_83_ = _zz_21_[0:0];
+  assign _zz_84_ = _zz_23_[1 : 1];
+  assign _zz_85_ = _zz_86_;
+  assign _zz_86_ = _zz_87_;
+  assign _zz_87_ = _zz_23_[0:0];
+  assign _zz_88_ = _zz_22_[0:0];
+  assign _zz_89_ = _zz_25_[0:0];
+  assign _zz_90_ = _zz_22_[0:0];
+  assign _zz_91_ = _zz_28_[1 : 1];
+  assign _zz_92_ = _zz_93_;
+  assign _zz_93_ = _zz_94_;
+  assign _zz_94_ = _zz_28_[0:0];
+  assign _zz_95_ = _zz_30_[1 : 1];
+  assign _zz_96_ = _zz_97_;
+  assign _zz_97_ = _zz_98_;
+  assign _zz_98_ = _zz_30_[0:0];
+  assign _zz_99_ = _zz_29_[0:0];
+  assign _zz_100_ = _zz_32_[0:0];
+  assign _zz_101_ = _zz_29_[0:0];
+  assign _zz_102_ = _zz_26_[1:0];
+  assign _zz_103_ = _zz_34_[1:0];
+  assign _zz_104_ = _zz_26_[1:0];
+  assign _zz_105_ = _zz_18_[2:0];
+  assign _zz_106_ = _zz_36_[2:0];
+  assign _zz_107_ = _zz_18_[2:0];
+  assign _zz_108_ = _zz_37_;
+  assign _zz_109_ = {2'd0, lz_p2};
+  assign sign_p0 = op_p0[15];
+  assign op_abs_p0 = _zz_53_;
+  assign _zz_1_ = (~ op_abs_p1);
+  assign _zz_2_ = _zz_1_[15 : 8];
+  assign _zz_3_ = _zz_2_[7 : 4];
+  assign _zz_4_ = _zz_3_[3 : 2];
+  always @ (*) begin
+    case(_zz_38_)
+      2'b11 : begin
+        _zz_5_ = (2'b10);
+      end
+      2'b10 : begin
+        _zz_5_ = (2'b01);
+      end
+      default : begin
+        _zz_5_ = (2'b00);
+      end
+    endcase
+  end
+
+  assign _zz_6_ = _zz_3_[1:0];
+  always @ (*) begin
+    case(_zz_39_)
+      2'b11 : begin
+        _zz_7_ = (2'b10);
+      end
+      2'b10 : begin
+        _zz_7_ = (2'b01);
+      end
+      default : begin
+        _zz_7_ = (2'b00);
+      end
+    endcase
+  end
+
+  assign _zz_8_ = _zz_7_;
+  always @ (*) begin
+    case(_zz_40_)
+      2'b11 : begin
+        _zz_9_ = {(2'b10),_zz_63_};
+      end
+      2'b10 : begin
+        _zz_9_ = {(2'b01),_zz_64_};
+      end
+      default : begin
+        _zz_9_ = {(2'b00),_zz_65_};
+      end
+    endcase
+  end
+
+  assign _zz_10_ = _zz_2_[3:0];
+  assign _zz_11_ = _zz_10_[3 : 2];
+  always @ (*) begin
+    case(_zz_41_)
+      2'b11 : begin
+        _zz_12_ = (2'b10);
+      end
+      2'b10 : begin
+        _zz_12_ = (2'b01);
+      end
+      default : begin
+        _zz_12_ = (2'b00);
+      end
+    endcase
+  end
+
+  assign _zz_13_ = _zz_10_[1:0];
+  always @ (*) begin
+    case(_zz_42_)
+      2'b11 : begin
+        _zz_14_ = (2'b10);
+      end
+      2'b10 : begin
+        _zz_14_ = (2'b01);
+      end
+      default : begin
+        _zz_14_ = (2'b00);
+      end
+    endcase
+  end
+
+  assign _zz_15_ = _zz_14_;
+  always @ (*) begin
+    case(_zz_43_)
+      2'b11 : begin
+        _zz_16_ = {(2'b10),_zz_74_};
+      end
+      2'b10 : begin
+        _zz_16_ = {(2'b01),_zz_75_};
+      end
+      default : begin
+        _zz_16_ = {(2'b00),_zz_76_};
+      end
+    endcase
+  end
+
+  assign _zz_17_ = _zz_16_;
+  always @ (*) begin
+    case(_zz_44_)
+      2'b11 : begin
+        _zz_18_ = {(2'b10),_zz_77_};
+      end
+      2'b10 : begin
+        _zz_18_ = {(2'b01),_zz_78_};
+      end
+      default : begin
+        _zz_18_ = {(2'b00),_zz_79_};
+      end
+    endcase
+  end
+
+  assign _zz_19_ = _zz_1_[7:0];
+  assign _zz_20_ = _zz_19_[7 : 4];
+  assign _zz_21_ = _zz_20_[3 : 2];
+  always @ (*) begin
+    case(_zz_45_)
+      2'b11 : begin
+        _zz_22_ = (2'b10);
+      end
+      2'b10 : begin
+        _zz_22_ = (2'b01);
+      end
+      default : begin
+        _zz_22_ = (2'b00);
+      end
+    endcase
+  end
+
+  assign _zz_23_ = _zz_20_[1:0];
+  always @ (*) begin
+    case(_zz_46_)
+      2'b11 : begin
+        _zz_24_ = (2'b10);
+      end
+      2'b10 : begin
+        _zz_24_ = (2'b01);
+      end
+      default : begin
+        _zz_24_ = (2'b00);
+      end
+    endcase
+  end
+
+  assign _zz_25_ = _zz_24_;
+  always @ (*) begin
+    case(_zz_47_)
+      2'b11 : begin
+        _zz_26_ = {(2'b10),_zz_88_};
+      end
+      2'b10 : begin
+        _zz_26_ = {(2'b01),_zz_89_};
+      end
+      default : begin
+        _zz_26_ = {(2'b00),_zz_90_};
+      end
+    endcase
+  end
+
+  assign _zz_27_ = _zz_19_[3:0];
+  assign _zz_28_ = _zz_27_[3 : 2];
+  always @ (*) begin
+    case(_zz_48_)
+      2'b11 : begin
+        _zz_29_ = (2'b10);
+      end
+      2'b10 : begin
+        _zz_29_ = (2'b01);
+      end
+      default : begin
+        _zz_29_ = (2'b00);
+      end
+    endcase
+  end
+
+  assign _zz_30_ = _zz_27_[1:0];
+  always @ (*) begin
+    case(_zz_49_)
+      2'b11 : begin
+        _zz_31_ = (2'b10);
+      end
+      2'b10 : begin
+        _zz_31_ = (2'b01);
+      end
+      default : begin
+        _zz_31_ = (2'b00);
+      end
+    endcase
+  end
+
+  assign _zz_32_ = _zz_31_;
+  always @ (*) begin
+    case(_zz_50_)
+      2'b11 : begin
+        _zz_33_ = {(2'b10),_zz_99_};
+      end
+      2'b10 : begin
+        _zz_33_ = {(2'b01),_zz_100_};
+      end
+      default : begin
+        _zz_33_ = {(2'b00),_zz_101_};
+      end
+    endcase
+  end
+
+  assign _zz_34_ = _zz_33_;
+  always @ (*) begin
+    case(_zz_51_)
+      2'b11 : begin
+        _zz_35_ = {(2'b10),_zz_102_};
+      end
+      2'b10 : begin
+        _zz_35_ = {(2'b01),_zz_103_};
+      end
+      default : begin
+        _zz_35_ = {(2'b00),_zz_104_};
+      end
+    endcase
+  end
+
+  assign _zz_36_ = _zz_35_;
+  always @ (*) begin
+    case(_zz_52_)
+      2'b11 : begin
+        _zz_37_ = {(2'b10),_zz_105_};
+      end
+      2'b10 : begin
+        _zz_37_ = {(2'b01),_zz_106_};
+      end
+      default : begin
+        _zz_37_ = {(2'b00),_zz_107_};
+      end
+    endcase
+  end
+
+  assign lz_p1 = _zz_108_[3:0];
+  assign op_adj_p2 = (op_abs_p2 <<< lz_p2);
+  always @ (*) begin
+    if((op_abs_p2 == (16'b0000000000000000)))begin
+      sign_final_p2 = 1'b0;
+      exp_final_p2 = (6'b000000);
+      mant_final_p2 = (13'b0000000000000);
+    end else begin
+      sign_final_p2 = sign_p2;
+      exp_final_p2 = ((6'b101110) - _zz_109_);
+      mant_final_p2 = op_adj_p2[14 : 2];
+    end
+  end
+
+  assign io_result_vld = p2_vld;
+  assign io_result_sign = sign_final_p2;
+  assign io_result_exp = exp_final_p2;
+  assign io_result_mant = mant_final_p2;
+  always @ (posedge clk or posedge reset) begin
+    if (reset) begin
+      p1_vld <= 1'b0;
+      p2_vld <= 1'b0;
+    end else begin
+      if(1'b1)begin
+        p1_vld <= p0_vld;
+      end
+      if(1'b1)begin
+        p2_vld <= p1_vld;
+      end
+    end
+  end
+
+  always @ (posedge clk) begin
+    if(p0_vld)begin
+      sign_p1 <= sign_p0;
+    end
+    if(p0_vld)begin
+      op_abs_p1 <= op_abs_p0;
+    end
+    if(p1_vld)begin
+      sign_p2 <= sign_p1;
+    end
+    if(p1_vld)begin
+      op_abs_p2 <= op_abs_p1;
+    end
+    if(p1_vld)begin
+      lz_p2 <= lz_p1;
+    end
+  end
+
+endmodule
+
+
+//FpxxMul_72_ remplaced by FpxxMul
+
+
+//FpxxAdd_66_ remplaced by FpxxAdd
+
+
+//FpxxAdd_67_ remplaced by FpxxAdd
 
 module RotateX (
       input   io_op_vld,
@@ -14046,12 +14646,30 @@ endmodule
 module PanoCore (
       input  [11:0] io_pix_x,
       input  [10:0] io_pix_y,
-      output [7:0] io_pixel_out_r,
-      output [7:0] io_pixel_out_g,
-      output [7:0] io_pixel_out_b,
+      input   io_pixel_in_vsync,
+      input   io_pixel_in_req,
+      input   io_pixel_in_eol,
+      input   io_pixel_in_eof,
+      input  [7:0] io_pixel_in_pixel_r,
+      input  [7:0] io_pixel_in_pixel_g,
+      input  [7:0] io_pixel_in_pixel_b,
+      output  io_pixel_out_vsync,
+      output  io_pixel_out_req,
+      output  io_pixel_out_eol,
+      output  io_pixel_out_eof,
+      output [7:0] io_pixel_out_pixel_r,
+      output [7:0] io_pixel_out_pixel_g,
+      output [7:0] io_pixel_out_pixel_b,
       input   clk,
       input   reset);
-  wire  _zz_7_;
+  wire  _zz_10_;
+  wire  rt_u_cam_sweep_io_pixel_out_vsync;
+  wire  rt_u_cam_sweep_io_pixel_out_req;
+  wire  rt_u_cam_sweep_io_pixel_out_eol;
+  wire  rt_u_cam_sweep_io_pixel_out_eof;
+  wire [7:0] rt_u_cam_sweep_io_pixel_out_pixel_r;
+  wire [7:0] rt_u_cam_sweep_io_pixel_out_pixel_g;
+  wire [7:0] rt_u_cam_sweep_io_pixel_out_pixel_b;
   wire  rt_u_cam_sweep_io_ray_origin_x_sign;
   wire [5:0] rt_u_cam_sweep_io_ray_origin_x_exp;
   wire [12:0] rt_u_cam_sweep_io_ray_origin_x_mant;
@@ -14070,6 +14688,22 @@ module PanoCore (
   wire  rt_u_cam_sweep_io_ray_direction_z_sign;
   wire [5:0] rt_u_cam_sweep_io_ray_direction_z_exp;
   wire [12:0] rt_u_cam_sweep_io_ray_direction_z_mant;
+  wire  rt_calc_sphere_pos_u_s_time_q_fp_io_result_vld;
+  wire  rt_calc_sphere_pos_u_s_time_q_fp_io_result_sign;
+  wire [5:0] rt_calc_sphere_pos_u_s_time_q_fp_io_result_exp;
+  wire [12:0] rt_calc_sphere_pos_u_s_time_q_fp_io_result_mant;
+  wire  rt_calc_sphere_pos_u_a_term_io_result_vld;
+  wire  rt_calc_sphere_pos_u_a_term_io_result_sign;
+  wire [5:0] rt_calc_sphere_pos_u_a_term_io_result_exp;
+  wire [12:0] rt_calc_sphere_pos_u_a_term_io_result_mant;
+  wire  rt_calc_sphere_pos_u_sphere_y_io_result_vld;
+  wire  rt_calc_sphere_pos_u_sphere_y_io_result_sign;
+  wire [5:0] rt_calc_sphere_pos_u_sphere_y_io_result_exp;
+  wire [12:0] rt_calc_sphere_pos_u_sphere_y_io_result_mant;
+  wire  rt_calc_sphere_pos_u_sphere_x_nxt_io_result_vld;
+  wire  rt_calc_sphere_pos_u_sphere_x_nxt_io_result_sign;
+  wire [5:0] rt_calc_sphere_pos_u_sphere_x_nxt_io_result_exp;
+  wire [12:0] rt_calc_sphere_pos_u_sphere_x_nxt_io_result_mant;
   wire  rt_u_ray_dir_rot_x_io_result_vld;
   wire  rt_u_ray_dir_rot_x_io_result_x_sign;
   wire [5:0] rt_u_ray_dir_rot_x_io_result_x_exp;
@@ -14269,30 +14903,42 @@ module PanoCore (
   wire  rt_u_spot_light_int_io_result_vld;
   wire [19:0] rt_u_spot_light_int_io_result;
   wire  rt_u_spot_light_int_io_result_ovfl;
-  wire [7:0] _zz_8_;
-  wire [7:0] _zz_9_;
-  wire [7:0] _zz_10_;
   wire [7:0] _zz_11_;
-  wire [8:0] _zz_12_;
-  wire [9:0] _zz_13_;
-  wire [17:0] _zz_14_;
-  wire [9:0] _zz_15_;
-  wire [17:0] _zz_16_;
-  wire [9:0] _zz_17_;
-  wire [17:0] _zz_18_;
+  wire [7:0] _zz_12_;
+  wire [7:0] _zz_13_;
+  wire [19:0] _zz_14_;
+  wire [19:0] _zz_15_;
+  wire [7:0] _zz_16_;
+  wire [7:0] _zz_17_;
+  wire [7:0] _zz_18_;
   wire [7:0] _zz_19_;
   wire [8:0] _zz_20_;
-  wire [6:0] _zz_21_;
-  wire [8:0] _zz_22_;
-  wire [8:0] _zz_23_;
-  wire [6:0] _zz_24_;
-  wire [8:0] _zz_25_;
-  wire [8:0] _zz_26_;
-  wire [6:0] _zz_27_;
+  wire [9:0] _zz_21_;
+  wire [17:0] _zz_22_;
+  wire [9:0] _zz_23_;
+  wire [17:0] _zz_24_;
+  wire [9:0] _zz_25_;
+  wire [17:0] _zz_26_;
+  wire [7:0] _zz_27_;
   wire [8:0] _zz_28_;
-  wire [7:0] _zz_29_;
-  wire [7:0] _zz_30_;
-  wire [7:0] _zz_31_;
+  wire [6:0] _zz_29_;
+  wire [8:0] _zz_30_;
+  wire [8:0] _zz_31_;
+  wire [6:0] _zz_32_;
+  wire [8:0] _zz_33_;
+  wire [8:0] _zz_34_;
+  wire [6:0] _zz_35_;
+  wire [8:0] _zz_36_;
+  wire [7:0] _zz_37_;
+  wire [7:0] _zz_38_;
+  wire [7:0] _zz_39_;
+  wire  rt_cam_sweep_pixel_vsync;
+  wire  rt_cam_sweep_pixel_req;
+  wire  rt_cam_sweep_pixel_eol;
+  wire  rt_cam_sweep_pixel_eof;
+  wire [7:0] rt_cam_sweep_pixel_pixel_r;
+  wire [7:0] rt_cam_sweep_pixel_pixel_g;
+  wire [7:0] rt_cam_sweep_pixel_pixel_b;
   reg  rt_ray_origin_x_sign;
   reg [5:0] rt_ray_origin_x_exp;
   reg [12:0] rt_ray_origin_x_mant;
@@ -14329,6 +14975,46 @@ module PanoCore (
   wire  rt_plane_normal_z_sign;
   wire [5:0] rt_plane_normal_z_exp;
   wire [12:0] rt_plane_normal_z_mant;
+  reg [7:0] rt_calc_sphere_pos_s_time;
+  reg  rt_calc_sphere_pos_first_time;
+  wire [7:0] rt_calc_sphere_pos_s_time_m90;
+  reg [15:0] rt_calc_sphere_pos_s_time_q;
+  wire  rt_calc_sphere_pos_s_time_q_fp_vld;
+  wire  rt_calc_sphere_pos_s_time_q_fp_sign;
+  wire [5:0] rt_calc_sphere_pos_s_time_q_fp_exp;
+  wire [12:0] rt_calc_sphere_pos_s_time_q_fp_mant;
+  reg  rt_calc_sphere_pos_first_time_regNext;
+  wire  rt_calc_sphere_pos_const_a_sign;
+  wire [5:0] rt_calc_sphere_pos_const_a_exp;
+  wire [12:0] rt_calc_sphere_pos_const_a_mant;
+  wire  rt_calc_sphere_pos_a_term_vld;
+  wire  rt_calc_sphere_pos_a_term_sign;
+  wire [5:0] rt_calc_sphere_pos_a_term_exp;
+  wire [12:0] rt_calc_sphere_pos_a_term_mant;
+  wire  rt_calc_sphere_pos_const_min_y_sign;
+  wire [5:0] rt_calc_sphere_pos_const_min_y_exp;
+  wire [12:0] rt_calc_sphere_pos_const_min_y_mant;
+  wire  rt_calc_sphere_pos_sphere_y_vld;
+  wire  rt_calc_sphere_pos_sphere_y_sign;
+  wire [5:0] rt_calc_sphere_pos_sphere_y_exp;
+  wire [12:0] rt_calc_sphere_pos_sphere_y_mant;
+  reg  rt_calc_sphere_pos_sphere_x_vld;
+  reg  rt_calc_sphere_pos_sphere_x_sign;
+  reg [5:0] rt_calc_sphere_pos_sphere_x_exp;
+  reg [12:0] rt_calc_sphere_pos_sphere_x_mant;
+  wire  rt_calc_sphere_pos_sphere_x_nxt_sign;
+  wire [5:0] rt_calc_sphere_pos_sphere_x_nxt_exp;
+  wire [12:0] rt_calc_sphere_pos_sphere_x_nxt_mant;
+  reg  rt_calc_sphere_pos_dir_x;
+  wire  rt_calc_sphere_pos_x_incr_sign;
+  wire [5:0] rt_calc_sphere_pos_x_incr_exp;
+  wire [12:0] rt_calc_sphere_pos_x_incr_mant;
+  wire  rt_calc_sphere_pos_x_incr_final_sign;
+  wire [5:0] rt_calc_sphere_pos_x_incr_final_exp;
+  wire [12:0] rt_calc_sphere_pos_x_incr_final_mant;
+  wire  rt_calc_sphere_pos_x_boundary_sign;
+  wire [5:0] rt_calc_sphere_pos_x_boundary_exp;
+  wire [12:0] rt_calc_sphere_pos_x_boundary_mant;
   wire  rt_sphere_center_x_sign;
   wire [5:0] rt_sphere_center_x_exp;
   wire [12:0] rt_sphere_center_x_mant;
@@ -14511,7 +15197,7 @@ module PanoCore (
   wire  rt_shadow_ray_direction_z_sign_1_;
   wire [5:0] rt_shadow_ray_direction_z_exp_1_;
   wire [12:0] rt_shadow_ray_direction_z_mant_1_;
-  wire  rt_spot_light_final_delayed_vld;
+  wire  rt_cam_sweep_pixel_delayed_vld;
   wire  rt_shadow_sphere_intersects_delayed_1;
   wire  rt_spot_light_vld;
   wire  rt_spot_light_sign;
@@ -14539,7 +15225,7 @@ module PanoCore (
   reg  rt_plane_intersects_final_delay_9;
   reg  rt_plane_intersects_final_delay_10;
   reg  rt_plane_intersects_final_delay_11;
-  reg  rt_plane_x_int_delayed_2;
+  reg  rt_plane_intersects_final_delayed_1;
   reg  rt_checker_color_delay_1;
   reg  rt_checker_color_delay_2;
   reg  rt_checker_color_delay_3;
@@ -14604,6 +15290,622 @@ module PanoCore (
   reg [7:0] rt_spot_light_final_delay_19;
   reg [7:0] rt_spot_light_final_delay_20;
   reg [7:0] rt_spot_light_final_delayed;
+  reg  rt_cam_sweep_pixel_delay_1_vsync;
+  reg  rt_cam_sweep_pixel_delay_1_req;
+  reg  rt_cam_sweep_pixel_delay_1_eol;
+  reg  rt_cam_sweep_pixel_delay_1_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_1_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_1_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_1_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_2_vsync;
+  reg  rt_cam_sweep_pixel_delay_2_req;
+  reg  rt_cam_sweep_pixel_delay_2_eol;
+  reg  rt_cam_sweep_pixel_delay_2_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_2_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_2_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_2_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_3_vsync;
+  reg  rt_cam_sweep_pixel_delay_3_req;
+  reg  rt_cam_sweep_pixel_delay_3_eol;
+  reg  rt_cam_sweep_pixel_delay_3_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_3_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_3_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_3_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_4_vsync;
+  reg  rt_cam_sweep_pixel_delay_4_req;
+  reg  rt_cam_sweep_pixel_delay_4_eol;
+  reg  rt_cam_sweep_pixel_delay_4_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_4_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_4_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_4_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_5_vsync;
+  reg  rt_cam_sweep_pixel_delay_5_req;
+  reg  rt_cam_sweep_pixel_delay_5_eol;
+  reg  rt_cam_sweep_pixel_delay_5_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_5_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_5_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_5_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_6_vsync;
+  reg  rt_cam_sweep_pixel_delay_6_req;
+  reg  rt_cam_sweep_pixel_delay_6_eol;
+  reg  rt_cam_sweep_pixel_delay_6_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_6_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_6_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_6_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_7_vsync;
+  reg  rt_cam_sweep_pixel_delay_7_req;
+  reg  rt_cam_sweep_pixel_delay_7_eol;
+  reg  rt_cam_sweep_pixel_delay_7_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_7_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_7_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_7_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_8_vsync;
+  reg  rt_cam_sweep_pixel_delay_8_req;
+  reg  rt_cam_sweep_pixel_delay_8_eol;
+  reg  rt_cam_sweep_pixel_delay_8_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_8_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_8_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_8_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_9_vsync;
+  reg  rt_cam_sweep_pixel_delay_9_req;
+  reg  rt_cam_sweep_pixel_delay_9_eol;
+  reg  rt_cam_sweep_pixel_delay_9_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_9_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_9_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_9_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_10_vsync;
+  reg  rt_cam_sweep_pixel_delay_10_req;
+  reg  rt_cam_sweep_pixel_delay_10_eol;
+  reg  rt_cam_sweep_pixel_delay_10_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_10_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_10_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_10_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_11_vsync;
+  reg  rt_cam_sweep_pixel_delay_11_req;
+  reg  rt_cam_sweep_pixel_delay_11_eol;
+  reg  rt_cam_sweep_pixel_delay_11_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_11_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_11_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_11_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_12_vsync;
+  reg  rt_cam_sweep_pixel_delay_12_req;
+  reg  rt_cam_sweep_pixel_delay_12_eol;
+  reg  rt_cam_sweep_pixel_delay_12_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_12_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_12_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_12_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_13_vsync;
+  reg  rt_cam_sweep_pixel_delay_13_req;
+  reg  rt_cam_sweep_pixel_delay_13_eol;
+  reg  rt_cam_sweep_pixel_delay_13_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_13_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_13_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_13_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_14_vsync;
+  reg  rt_cam_sweep_pixel_delay_14_req;
+  reg  rt_cam_sweep_pixel_delay_14_eol;
+  reg  rt_cam_sweep_pixel_delay_14_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_14_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_14_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_14_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_15_vsync;
+  reg  rt_cam_sweep_pixel_delay_15_req;
+  reg  rt_cam_sweep_pixel_delay_15_eol;
+  reg  rt_cam_sweep_pixel_delay_15_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_15_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_15_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_15_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_16_vsync;
+  reg  rt_cam_sweep_pixel_delay_16_req;
+  reg  rt_cam_sweep_pixel_delay_16_eol;
+  reg  rt_cam_sweep_pixel_delay_16_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_16_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_16_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_16_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_17_vsync;
+  reg  rt_cam_sweep_pixel_delay_17_req;
+  reg  rt_cam_sweep_pixel_delay_17_eol;
+  reg  rt_cam_sweep_pixel_delay_17_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_17_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_17_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_17_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_18_vsync;
+  reg  rt_cam_sweep_pixel_delay_18_req;
+  reg  rt_cam_sweep_pixel_delay_18_eol;
+  reg  rt_cam_sweep_pixel_delay_18_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_18_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_18_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_18_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_19_vsync;
+  reg  rt_cam_sweep_pixel_delay_19_req;
+  reg  rt_cam_sweep_pixel_delay_19_eol;
+  reg  rt_cam_sweep_pixel_delay_19_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_19_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_19_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_19_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_20_vsync;
+  reg  rt_cam_sweep_pixel_delay_20_req;
+  reg  rt_cam_sweep_pixel_delay_20_eol;
+  reg  rt_cam_sweep_pixel_delay_20_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_20_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_20_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_20_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_21_vsync;
+  reg  rt_cam_sweep_pixel_delay_21_req;
+  reg  rt_cam_sweep_pixel_delay_21_eol;
+  reg  rt_cam_sweep_pixel_delay_21_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_21_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_21_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_21_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_22_vsync;
+  reg  rt_cam_sweep_pixel_delay_22_req;
+  reg  rt_cam_sweep_pixel_delay_22_eol;
+  reg  rt_cam_sweep_pixel_delay_22_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_22_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_22_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_22_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_23_vsync;
+  reg  rt_cam_sweep_pixel_delay_23_req;
+  reg  rt_cam_sweep_pixel_delay_23_eol;
+  reg  rt_cam_sweep_pixel_delay_23_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_23_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_23_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_23_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_24_vsync;
+  reg  rt_cam_sweep_pixel_delay_24_req;
+  reg  rt_cam_sweep_pixel_delay_24_eol;
+  reg  rt_cam_sweep_pixel_delay_24_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_24_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_24_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_24_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_25_vsync;
+  reg  rt_cam_sweep_pixel_delay_25_req;
+  reg  rt_cam_sweep_pixel_delay_25_eol;
+  reg  rt_cam_sweep_pixel_delay_25_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_25_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_25_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_25_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_26_vsync;
+  reg  rt_cam_sweep_pixel_delay_26_req;
+  reg  rt_cam_sweep_pixel_delay_26_eol;
+  reg  rt_cam_sweep_pixel_delay_26_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_26_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_26_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_26_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_27_vsync;
+  reg  rt_cam_sweep_pixel_delay_27_req;
+  reg  rt_cam_sweep_pixel_delay_27_eol;
+  reg  rt_cam_sweep_pixel_delay_27_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_27_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_27_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_27_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_28_vsync;
+  reg  rt_cam_sweep_pixel_delay_28_req;
+  reg  rt_cam_sweep_pixel_delay_28_eol;
+  reg  rt_cam_sweep_pixel_delay_28_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_28_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_28_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_28_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_29_vsync;
+  reg  rt_cam_sweep_pixel_delay_29_req;
+  reg  rt_cam_sweep_pixel_delay_29_eol;
+  reg  rt_cam_sweep_pixel_delay_29_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_29_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_29_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_29_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_30_vsync;
+  reg  rt_cam_sweep_pixel_delay_30_req;
+  reg  rt_cam_sweep_pixel_delay_30_eol;
+  reg  rt_cam_sweep_pixel_delay_30_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_30_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_30_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_30_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_31_vsync;
+  reg  rt_cam_sweep_pixel_delay_31_req;
+  reg  rt_cam_sweep_pixel_delay_31_eol;
+  reg  rt_cam_sweep_pixel_delay_31_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_31_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_31_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_31_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_32_vsync;
+  reg  rt_cam_sweep_pixel_delay_32_req;
+  reg  rt_cam_sweep_pixel_delay_32_eol;
+  reg  rt_cam_sweep_pixel_delay_32_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_32_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_32_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_32_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_33_vsync;
+  reg  rt_cam_sweep_pixel_delay_33_req;
+  reg  rt_cam_sweep_pixel_delay_33_eol;
+  reg  rt_cam_sweep_pixel_delay_33_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_33_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_33_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_33_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_34_vsync;
+  reg  rt_cam_sweep_pixel_delay_34_req;
+  reg  rt_cam_sweep_pixel_delay_34_eol;
+  reg  rt_cam_sweep_pixel_delay_34_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_34_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_34_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_34_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_35_vsync;
+  reg  rt_cam_sweep_pixel_delay_35_req;
+  reg  rt_cam_sweep_pixel_delay_35_eol;
+  reg  rt_cam_sweep_pixel_delay_35_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_35_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_35_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_35_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_36_vsync;
+  reg  rt_cam_sweep_pixel_delay_36_req;
+  reg  rt_cam_sweep_pixel_delay_36_eol;
+  reg  rt_cam_sweep_pixel_delay_36_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_36_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_36_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_36_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_37_vsync;
+  reg  rt_cam_sweep_pixel_delay_37_req;
+  reg  rt_cam_sweep_pixel_delay_37_eol;
+  reg  rt_cam_sweep_pixel_delay_37_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_37_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_37_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_37_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_38_vsync;
+  reg  rt_cam_sweep_pixel_delay_38_req;
+  reg  rt_cam_sweep_pixel_delay_38_eol;
+  reg  rt_cam_sweep_pixel_delay_38_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_38_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_38_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_38_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_39_vsync;
+  reg  rt_cam_sweep_pixel_delay_39_req;
+  reg  rt_cam_sweep_pixel_delay_39_eol;
+  reg  rt_cam_sweep_pixel_delay_39_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_39_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_39_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_39_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_40_vsync;
+  reg  rt_cam_sweep_pixel_delay_40_req;
+  reg  rt_cam_sweep_pixel_delay_40_eol;
+  reg  rt_cam_sweep_pixel_delay_40_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_40_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_40_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_40_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_41_vsync;
+  reg  rt_cam_sweep_pixel_delay_41_req;
+  reg  rt_cam_sweep_pixel_delay_41_eol;
+  reg  rt_cam_sweep_pixel_delay_41_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_41_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_41_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_41_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_42_vsync;
+  reg  rt_cam_sweep_pixel_delay_42_req;
+  reg  rt_cam_sweep_pixel_delay_42_eol;
+  reg  rt_cam_sweep_pixel_delay_42_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_42_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_42_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_42_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_43_vsync;
+  reg  rt_cam_sweep_pixel_delay_43_req;
+  reg  rt_cam_sweep_pixel_delay_43_eol;
+  reg  rt_cam_sweep_pixel_delay_43_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_43_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_43_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_43_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_44_vsync;
+  reg  rt_cam_sweep_pixel_delay_44_req;
+  reg  rt_cam_sweep_pixel_delay_44_eol;
+  reg  rt_cam_sweep_pixel_delay_44_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_44_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_44_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_44_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_45_vsync;
+  reg  rt_cam_sweep_pixel_delay_45_req;
+  reg  rt_cam_sweep_pixel_delay_45_eol;
+  reg  rt_cam_sweep_pixel_delay_45_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_45_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_45_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_45_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_46_vsync;
+  reg  rt_cam_sweep_pixel_delay_46_req;
+  reg  rt_cam_sweep_pixel_delay_46_eol;
+  reg  rt_cam_sweep_pixel_delay_46_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_46_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_46_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_46_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_47_vsync;
+  reg  rt_cam_sweep_pixel_delay_47_req;
+  reg  rt_cam_sweep_pixel_delay_47_eol;
+  reg  rt_cam_sweep_pixel_delay_47_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_47_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_47_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_47_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_48_vsync;
+  reg  rt_cam_sweep_pixel_delay_48_req;
+  reg  rt_cam_sweep_pixel_delay_48_eol;
+  reg  rt_cam_sweep_pixel_delay_48_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_48_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_48_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_48_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_49_vsync;
+  reg  rt_cam_sweep_pixel_delay_49_req;
+  reg  rt_cam_sweep_pixel_delay_49_eol;
+  reg  rt_cam_sweep_pixel_delay_49_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_49_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_49_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_49_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_50_vsync;
+  reg  rt_cam_sweep_pixel_delay_50_req;
+  reg  rt_cam_sweep_pixel_delay_50_eol;
+  reg  rt_cam_sweep_pixel_delay_50_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_50_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_50_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_50_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_51_vsync;
+  reg  rt_cam_sweep_pixel_delay_51_req;
+  reg  rt_cam_sweep_pixel_delay_51_eol;
+  reg  rt_cam_sweep_pixel_delay_51_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_51_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_51_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_51_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_52_vsync;
+  reg  rt_cam_sweep_pixel_delay_52_req;
+  reg  rt_cam_sweep_pixel_delay_52_eol;
+  reg  rt_cam_sweep_pixel_delay_52_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_52_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_52_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_52_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_53_vsync;
+  reg  rt_cam_sweep_pixel_delay_53_req;
+  reg  rt_cam_sweep_pixel_delay_53_eol;
+  reg  rt_cam_sweep_pixel_delay_53_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_53_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_53_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_53_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_54_vsync;
+  reg  rt_cam_sweep_pixel_delay_54_req;
+  reg  rt_cam_sweep_pixel_delay_54_eol;
+  reg  rt_cam_sweep_pixel_delay_54_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_54_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_54_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_54_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_55_vsync;
+  reg  rt_cam_sweep_pixel_delay_55_req;
+  reg  rt_cam_sweep_pixel_delay_55_eol;
+  reg  rt_cam_sweep_pixel_delay_55_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_55_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_55_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_55_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_56_vsync;
+  reg  rt_cam_sweep_pixel_delay_56_req;
+  reg  rt_cam_sweep_pixel_delay_56_eol;
+  reg  rt_cam_sweep_pixel_delay_56_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_56_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_56_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_56_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_57_vsync;
+  reg  rt_cam_sweep_pixel_delay_57_req;
+  reg  rt_cam_sweep_pixel_delay_57_eol;
+  reg  rt_cam_sweep_pixel_delay_57_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_57_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_57_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_57_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_58_vsync;
+  reg  rt_cam_sweep_pixel_delay_58_req;
+  reg  rt_cam_sweep_pixel_delay_58_eol;
+  reg  rt_cam_sweep_pixel_delay_58_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_58_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_58_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_58_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_59_vsync;
+  reg  rt_cam_sweep_pixel_delay_59_req;
+  reg  rt_cam_sweep_pixel_delay_59_eol;
+  reg  rt_cam_sweep_pixel_delay_59_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_59_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_59_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_59_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_60_vsync;
+  reg  rt_cam_sweep_pixel_delay_60_req;
+  reg  rt_cam_sweep_pixel_delay_60_eol;
+  reg  rt_cam_sweep_pixel_delay_60_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_60_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_60_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_60_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_61_vsync;
+  reg  rt_cam_sweep_pixel_delay_61_req;
+  reg  rt_cam_sweep_pixel_delay_61_eol;
+  reg  rt_cam_sweep_pixel_delay_61_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_61_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_61_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_61_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_62_vsync;
+  reg  rt_cam_sweep_pixel_delay_62_req;
+  reg  rt_cam_sweep_pixel_delay_62_eol;
+  reg  rt_cam_sweep_pixel_delay_62_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_62_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_62_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_62_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_63_vsync;
+  reg  rt_cam_sweep_pixel_delay_63_req;
+  reg  rt_cam_sweep_pixel_delay_63_eol;
+  reg  rt_cam_sweep_pixel_delay_63_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_63_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_63_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_63_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_64_vsync;
+  reg  rt_cam_sweep_pixel_delay_64_req;
+  reg  rt_cam_sweep_pixel_delay_64_eol;
+  reg  rt_cam_sweep_pixel_delay_64_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_64_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_64_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_64_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_65_vsync;
+  reg  rt_cam_sweep_pixel_delay_65_req;
+  reg  rt_cam_sweep_pixel_delay_65_eol;
+  reg  rt_cam_sweep_pixel_delay_65_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_65_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_65_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_65_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_66_vsync;
+  reg  rt_cam_sweep_pixel_delay_66_req;
+  reg  rt_cam_sweep_pixel_delay_66_eol;
+  reg  rt_cam_sweep_pixel_delay_66_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_66_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_66_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_66_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_67_vsync;
+  reg  rt_cam_sweep_pixel_delay_67_req;
+  reg  rt_cam_sweep_pixel_delay_67_eol;
+  reg  rt_cam_sweep_pixel_delay_67_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_67_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_67_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_67_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_68_vsync;
+  reg  rt_cam_sweep_pixel_delay_68_req;
+  reg  rt_cam_sweep_pixel_delay_68_eol;
+  reg  rt_cam_sweep_pixel_delay_68_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_68_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_68_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_68_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_69_vsync;
+  reg  rt_cam_sweep_pixel_delay_69_req;
+  reg  rt_cam_sweep_pixel_delay_69_eol;
+  reg  rt_cam_sweep_pixel_delay_69_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_69_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_69_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_69_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_70_vsync;
+  reg  rt_cam_sweep_pixel_delay_70_req;
+  reg  rt_cam_sweep_pixel_delay_70_eol;
+  reg  rt_cam_sweep_pixel_delay_70_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_70_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_70_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_70_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_71_vsync;
+  reg  rt_cam_sweep_pixel_delay_71_req;
+  reg  rt_cam_sweep_pixel_delay_71_eol;
+  reg  rt_cam_sweep_pixel_delay_71_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_71_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_71_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_71_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_72_vsync;
+  reg  rt_cam_sweep_pixel_delay_72_req;
+  reg  rt_cam_sweep_pixel_delay_72_eol;
+  reg  rt_cam_sweep_pixel_delay_72_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_72_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_72_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_72_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_73_vsync;
+  reg  rt_cam_sweep_pixel_delay_73_req;
+  reg  rt_cam_sweep_pixel_delay_73_eol;
+  reg  rt_cam_sweep_pixel_delay_73_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_73_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_73_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_73_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_74_vsync;
+  reg  rt_cam_sweep_pixel_delay_74_req;
+  reg  rt_cam_sweep_pixel_delay_74_eol;
+  reg  rt_cam_sweep_pixel_delay_74_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_74_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_74_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_74_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_75_vsync;
+  reg  rt_cam_sweep_pixel_delay_75_req;
+  reg  rt_cam_sweep_pixel_delay_75_eol;
+  reg  rt_cam_sweep_pixel_delay_75_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_75_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_75_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_75_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_76_vsync;
+  reg  rt_cam_sweep_pixel_delay_76_req;
+  reg  rt_cam_sweep_pixel_delay_76_eol;
+  reg  rt_cam_sweep_pixel_delay_76_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_76_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_76_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_76_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_77_vsync;
+  reg  rt_cam_sweep_pixel_delay_77_req;
+  reg  rt_cam_sweep_pixel_delay_77_eol;
+  reg  rt_cam_sweep_pixel_delay_77_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_77_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_77_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_77_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_78_vsync;
+  reg  rt_cam_sweep_pixel_delay_78_req;
+  reg  rt_cam_sweep_pixel_delay_78_eol;
+  reg  rt_cam_sweep_pixel_delay_78_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_78_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_78_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_78_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_79_vsync;
+  reg  rt_cam_sweep_pixel_delay_79_req;
+  reg  rt_cam_sweep_pixel_delay_79_eol;
+  reg  rt_cam_sweep_pixel_delay_79_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_79_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_79_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_79_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_80_vsync;
+  reg  rt_cam_sweep_pixel_delay_80_req;
+  reg  rt_cam_sweep_pixel_delay_80_eol;
+  reg  rt_cam_sweep_pixel_delay_80_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_80_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_80_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_80_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_81_vsync;
+  reg  rt_cam_sweep_pixel_delay_81_req;
+  reg  rt_cam_sweep_pixel_delay_81_eol;
+  reg  rt_cam_sweep_pixel_delay_81_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_81_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_81_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_81_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_82_vsync;
+  reg  rt_cam_sweep_pixel_delay_82_req;
+  reg  rt_cam_sweep_pixel_delay_82_eol;
+  reg  rt_cam_sweep_pixel_delay_82_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_82_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_82_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_82_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_83_vsync;
+  reg  rt_cam_sweep_pixel_delay_83_req;
+  reg  rt_cam_sweep_pixel_delay_83_eol;
+  reg  rt_cam_sweep_pixel_delay_83_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_83_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_83_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_83_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_84_vsync;
+  reg  rt_cam_sweep_pixel_delay_84_req;
+  reg  rt_cam_sweep_pixel_delay_84_eol;
+  reg  rt_cam_sweep_pixel_delay_84_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_84_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_84_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_84_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_85_vsync;
+  reg  rt_cam_sweep_pixel_delay_85_req;
+  reg  rt_cam_sweep_pixel_delay_85_eol;
+  reg  rt_cam_sweep_pixel_delay_85_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_85_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_85_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_85_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_86_vsync;
+  reg  rt_cam_sweep_pixel_delay_86_req;
+  reg  rt_cam_sweep_pixel_delay_86_eol;
+  reg  rt_cam_sweep_pixel_delay_86_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_86_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_86_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_86_pixel_b;
+  reg  rt_cam_sweep_pixel_delay_87_vsync;
+  reg  rt_cam_sweep_pixel_delay_87_req;
+  reg  rt_cam_sweep_pixel_delay_87_eol;
+  reg  rt_cam_sweep_pixel_delay_87_eof;
+  reg [7:0] rt_cam_sweep_pixel_delay_87_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delay_87_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delay_87_pixel_b;
+  reg  rt_cam_sweep_pixel_delayed_vsync;
+  reg  rt_cam_sweep_pixel_delayed_req;
+  reg  rt_cam_sweep_pixel_delayed_eol;
+  reg  rt_cam_sweep_pixel_delayed_eof;
+  reg [7:0] rt_cam_sweep_pixel_delayed_pixel_r;
+  reg [7:0] rt_cam_sweep_pixel_delayed_pixel_g;
+  reg [7:0] rt_cam_sweep_pixel_delayed_pixel_b;
   wire [7:0] rt_sky_r;
   wire [7:0] rt_sky_g;
   wire [7:0] rt_sky_b;
@@ -14637,42 +15939,68 @@ module PanoCore (
   wire [7:0] rt_yellow_sky_r;
   wire [7:0] rt_yellow_sky_g;
   wire [7:0] rt_yellow_sky_b;
-  reg [7:0] rt_color_r;
-  reg [7:0] rt_color_g;
-  reg [7:0] rt_color_b;
+  wire  rt_rt_pixel_vsync;
+  wire  rt_rt_pixel_req;
+  wire  rt_rt_pixel_eol;
+  wire  rt_rt_pixel_eof;
+  reg [7:0] rt_rt_pixel_pixel_r;
+  reg [7:0] rt_rt_pixel_pixel_g;
+  reg [7:0] rt_rt_pixel_pixel_b;
   reg [7:0] _zz_1_;
   reg [7:0] _zz_2_;
   reg [7:0] _zz_3_;
-  wire [8:0] _zz_4_;
-  wire [8:0] _zz_5_;
-  wire [8:0] _zz_6_;
-  assign _zz_8_ = rt_plane_x_int_delayed_1[19 : 12];
-  assign _zz_9_ = (8'b00010000);
-  assign _zz_10_ = rt_plane_z_int_delayed_0[19 : 12];
-  assign _zz_11_ = (8'b00011100);
-  assign _zz_12_ = rt_spot_light_int_full[12 : 4];
-  assign _zz_13_ = (_zz_14_ >>> 8);
-  assign _zz_14_ = (rt_spot_light_int * rt_spot_light_int);
-  assign _zz_15_ = (_zz_16_ >>> 8);
-  assign _zz_16_ = (rt_spot_light_e2 * rt_spot_light_e2);
-  assign _zz_17_ = (_zz_18_ >>> 8);
-  assign _zz_18_ = (rt_spot_light_e4 * rt_spot_light_e4);
-  assign _zz_19_ = rt_spot_light_e8[7:0];
-  assign _zz_20_ = {1'd0, _zz_1_};
-  assign _zz_21_ = (rt_spot_light_final_delayed >>> 1);
-  assign _zz_22_ = {2'd0, _zz_21_};
-  assign _zz_23_ = {1'd0, _zz_2_};
-  assign _zz_24_ = (rt_spot_light_final_delayed >>> 1);
-  assign _zz_25_ = {2'd0, _zz_24_};
-  assign _zz_26_ = {1'd0, _zz_3_};
-  assign _zz_27_ = (rt_spot_light_final_delayed >>> 1);
-  assign _zz_28_ = {2'd0, _zz_27_};
-  assign _zz_29_ = _zz_4_[7:0];
-  assign _zz_30_ = _zz_5_[7:0];
-  assign _zz_31_ = _zz_6_[7:0];
+  reg [7:0] _zz_4_;
+  reg [7:0] _zz_5_;
+  reg [7:0] _zz_6_;
+  wire [8:0] _zz_7_;
+  wire [8:0] _zz_8_;
+  wire [8:0] _zz_9_;
+  assign _zz_11_ = (8'b01011001);
+  assign _zz_12_ = (8'b00000001);
+  assign _zz_13_ = (8'b01011010);
+  assign _zz_14_ = {{rt_calc_sphere_pos_x_boundary_sign,rt_calc_sphere_pos_x_boundary_exp},rt_calc_sphere_pos_x_boundary_mant};
+  assign _zz_15_ = {{1'b0,rt_calc_sphere_pos_sphere_x_nxt_exp},rt_calc_sphere_pos_sphere_x_nxt_mant};
+  assign _zz_16_ = rt_plane_x_int_delayed_1[19 : 12];
+  assign _zz_17_ = (8'b00010000);
+  assign _zz_18_ = rt_plane_z_int_delayed_0[19 : 12];
+  assign _zz_19_ = (8'b00011100);
+  assign _zz_20_ = rt_spot_light_int_full[12 : 4];
+  assign _zz_21_ = (_zz_22_ >>> 8);
+  assign _zz_22_ = (rt_spot_light_int * rt_spot_light_int);
+  assign _zz_23_ = (_zz_24_ >>> 8);
+  assign _zz_24_ = (rt_spot_light_e2 * rt_spot_light_e2);
+  assign _zz_25_ = (_zz_26_ >>> 8);
+  assign _zz_26_ = (rt_spot_light_e4 * rt_spot_light_e4);
+  assign _zz_27_ = rt_spot_light_e8[7:0];
+  assign _zz_28_ = {1'd0, _zz_4_};
+  assign _zz_29_ = (rt_spot_light_final_delayed >>> 1);
+  assign _zz_30_ = {2'd0, _zz_29_};
+  assign _zz_31_ = {1'd0, _zz_5_};
+  assign _zz_32_ = (rt_spot_light_final_delayed >>> 1);
+  assign _zz_33_ = {2'd0, _zz_32_};
+  assign _zz_34_ = {1'd0, _zz_6_};
+  assign _zz_35_ = (rt_spot_light_final_delayed >>> 1);
+  assign _zz_36_ = {2'd0, _zz_35_};
+  assign _zz_37_ = _zz_7_[7:0];
+  assign _zz_38_ = _zz_8_[7:0];
+  assign _zz_39_ = _zz_9_[7:0];
   CamSweep rt_u_cam_sweep ( 
     .io_pix_x(io_pix_x),
     .io_pix_y(io_pix_y),
+    .io_pixel_in_vsync(io_pixel_in_vsync),
+    .io_pixel_in_req(io_pixel_in_req),
+    .io_pixel_in_eol(io_pixel_in_eol),
+    .io_pixel_in_eof(io_pixel_in_eof),
+    .io_pixel_in_pixel_r(io_pixel_in_pixel_r),
+    .io_pixel_in_pixel_g(io_pixel_in_pixel_g),
+    .io_pixel_in_pixel_b(io_pixel_in_pixel_b),
+    .io_pixel_out_vsync(rt_u_cam_sweep_io_pixel_out_vsync),
+    .io_pixel_out_req(rt_u_cam_sweep_io_pixel_out_req),
+    .io_pixel_out_eol(rt_u_cam_sweep_io_pixel_out_eol),
+    .io_pixel_out_eof(rt_u_cam_sweep_io_pixel_out_eof),
+    .io_pixel_out_pixel_r(rt_u_cam_sweep_io_pixel_out_pixel_r),
+    .io_pixel_out_pixel_g(rt_u_cam_sweep_io_pixel_out_pixel_g),
+    .io_pixel_out_pixel_b(rt_u_cam_sweep_io_pixel_out_pixel_b),
     .io_ray_origin_x_sign(rt_u_cam_sweep_io_ray_origin_x_sign),
     .io_ray_origin_x_exp(rt_u_cam_sweep_io_ray_origin_x_exp),
     .io_ray_origin_x_mant(rt_u_cam_sweep_io_ray_origin_x_mant),
@@ -14694,8 +16022,63 @@ module PanoCore (
     .clk(clk),
     .reset(reset) 
   );
+  SInt2Fpxx_2_ rt_calc_sphere_pos_u_s_time_q_fp ( 
+    .p0_vld(_zz_10_),
+    .op_p0(rt_calc_sphere_pos_s_time_q),
+    .io_result_vld(rt_calc_sphere_pos_u_s_time_q_fp_io_result_vld),
+    .io_result_sign(rt_calc_sphere_pos_u_s_time_q_fp_io_result_sign),
+    .io_result_exp(rt_calc_sphere_pos_u_s_time_q_fp_io_result_exp),
+    .io_result_mant(rt_calc_sphere_pos_u_s_time_q_fp_io_result_mant),
+    .clk(clk),
+    .reset(reset) 
+  );
+  FpxxMul rt_calc_sphere_pos_u_a_term ( 
+    .p0_vld(rt_calc_sphere_pos_s_time_q_fp_vld),
+    .op_a_p0_sign(rt_calc_sphere_pos_s_time_q_fp_sign),
+    .exp_a_p0(rt_calc_sphere_pos_s_time_q_fp_exp),
+    .op_a_p0_mant(rt_calc_sphere_pos_s_time_q_fp_mant),
+    .op_b_p0_sign(rt_calc_sphere_pos_const_a_sign),
+    .exp_b_p0(rt_calc_sphere_pos_const_a_exp),
+    .op_b_p0_mant(rt_calc_sphere_pos_const_a_mant),
+    .io_result_vld(rt_calc_sphere_pos_u_a_term_io_result_vld),
+    .io_result_sign(rt_calc_sphere_pos_u_a_term_io_result_sign),
+    .io_result_exp(rt_calc_sphere_pos_u_a_term_io_result_exp),
+    .io_result_mant(rt_calc_sphere_pos_u_a_term_io_result_mant),
+    .clk(clk),
+    .reset(reset) 
+  );
+  FpxxAdd rt_calc_sphere_pos_u_sphere_y ( 
+    .p0_vld(rt_calc_sphere_pos_a_term_vld),
+    .op_a_p0_sign(rt_calc_sphere_pos_a_term_sign),
+    .op_a_p0_exp(rt_calc_sphere_pos_a_term_exp),
+    .op_a_p0_mant(rt_calc_sphere_pos_a_term_mant),
+    .op_b_p0_sign(rt_calc_sphere_pos_const_min_y_sign),
+    .op_b_p0_exp(rt_calc_sphere_pos_const_min_y_exp),
+    .op_b_p0_mant(rt_calc_sphere_pos_const_min_y_mant),
+    .io_result_vld(rt_calc_sphere_pos_u_sphere_y_io_result_vld),
+    .io_result_sign(rt_calc_sphere_pos_u_sphere_y_io_result_sign),
+    .io_result_exp(rt_calc_sphere_pos_u_sphere_y_io_result_exp),
+    .io_result_mant(rt_calc_sphere_pos_u_sphere_y_io_result_mant),
+    .clk(clk),
+    .reset(reset) 
+  );
+  FpxxAdd rt_calc_sphere_pos_u_sphere_x_nxt ( 
+    .p0_vld(rt_calc_sphere_pos_sphere_x_vld),
+    .op_a_p0_sign(rt_calc_sphere_pos_sphere_x_sign),
+    .op_a_p0_exp(rt_calc_sphere_pos_sphere_x_exp),
+    .op_a_p0_mant(rt_calc_sphere_pos_sphere_x_mant),
+    .op_b_p0_sign(rt_calc_sphere_pos_x_incr_final_sign),
+    .op_b_p0_exp(rt_calc_sphere_pos_x_incr_final_exp),
+    .op_b_p0_mant(rt_calc_sphere_pos_x_incr_final_mant),
+    .io_result_vld(rt_calc_sphere_pos_u_sphere_x_nxt_io_result_vld),
+    .io_result_sign(rt_calc_sphere_pos_u_sphere_x_nxt_io_result_sign),
+    .io_result_exp(rt_calc_sphere_pos_u_sphere_x_nxt_io_result_exp),
+    .io_result_mant(rt_calc_sphere_pos_u_sphere_x_nxt_io_result_mant),
+    .clk(clk),
+    .reset(reset) 
+  );
   RotateX rt_u_ray_dir_rot_x ( 
-    .io_op_vld(_zz_7_),
+    .io_op_vld(rt_cam_sweep_pixel_req),
     .io_op_x_sign(rt_ray_direction_x_sign),
     .io_op_x_exp(rt_ray_direction_x_exp),
     .io_op_x_mant(rt_ray_direction_x_mant),
@@ -15105,6 +16488,13 @@ module PanoCore (
     .clk(clk),
     .reset(reset) 
   );
+  assign rt_cam_sweep_pixel_vsync = rt_u_cam_sweep_io_pixel_out_vsync;
+  assign rt_cam_sweep_pixel_req = rt_u_cam_sweep_io_pixel_out_req;
+  assign rt_cam_sweep_pixel_eol = rt_u_cam_sweep_io_pixel_out_eol;
+  assign rt_cam_sweep_pixel_eof = rt_u_cam_sweep_io_pixel_out_eof;
+  assign rt_cam_sweep_pixel_pixel_r = rt_u_cam_sweep_io_pixel_out_pixel_r;
+  assign rt_cam_sweep_pixel_pixel_g = rt_u_cam_sweep_io_pixel_out_pixel_g;
+  assign rt_cam_sweep_pixel_pixel_b = rt_u_cam_sweep_io_pixel_out_pixel_b;
   always @ (*) begin
     rt_ray_origin_x_sign = rt_u_cam_sweep_io_ray_origin_x_sign;
     rt_ray_origin_x_exp = rt_u_cam_sweep_io_ray_origin_x_exp;
@@ -15152,12 +16542,44 @@ module PanoCore (
   assign rt_plane_normal_z_sign = 1'b0;
   assign rt_plane_normal_z_exp = (6'b000000);
   assign rt_plane_normal_z_mant = (13'b0000000000000);
-  assign rt_sphere_center_x_sign = 1'b0;
-  assign rt_sphere_center_x_exp = (6'b100000);
-  assign rt_sphere_center_x_mant = (13'b1000000000000);
-  assign rt_sphere_center_y_sign = 1'b0;
-  assign rt_sphere_center_y_exp = (6'b100000);
-  assign rt_sphere_center_y_mant = (13'b1000000000000);
+  assign rt_calc_sphere_pos_s_time_m90 = ($signed(rt_calc_sphere_pos_s_time) - $signed(_zz_13_));
+  assign _zz_10_ = ((io_pixel_in_req && io_pixel_in_eof) || rt_calc_sphere_pos_first_time_regNext);
+  assign rt_calc_sphere_pos_s_time_q_fp_vld = rt_calc_sphere_pos_u_s_time_q_fp_io_result_vld;
+  assign rt_calc_sphere_pos_s_time_q_fp_sign = rt_calc_sphere_pos_u_s_time_q_fp_io_result_sign;
+  assign rt_calc_sphere_pos_s_time_q_fp_exp = rt_calc_sphere_pos_u_s_time_q_fp_io_result_exp;
+  assign rt_calc_sphere_pos_s_time_q_fp_mant = rt_calc_sphere_pos_u_s_time_q_fp_io_result_mant;
+  assign rt_calc_sphere_pos_const_a_sign = 1'b1;
+  assign rt_calc_sphere_pos_const_a_exp = (6'b010110);
+  assign rt_calc_sphere_pos_const_a_mant = (13'b1100010100010);
+  assign rt_calc_sphere_pos_a_term_vld = rt_calc_sphere_pos_u_a_term_io_result_vld;
+  assign rt_calc_sphere_pos_a_term_sign = rt_calc_sphere_pos_u_a_term_io_result_sign;
+  assign rt_calc_sphere_pos_a_term_exp = rt_calc_sphere_pos_u_a_term_io_result_exp;
+  assign rt_calc_sphere_pos_a_term_mant = rt_calc_sphere_pos_u_a_term_io_result_mant;
+  assign rt_calc_sphere_pos_const_min_y_sign = 1'b0;
+  assign rt_calc_sphere_pos_const_min_y_exp = (6'b100000);
+  assign rt_calc_sphere_pos_const_min_y_mant = (13'b1000000000000);
+  assign rt_calc_sphere_pos_sphere_y_vld = rt_calc_sphere_pos_u_sphere_y_io_result_vld;
+  assign rt_calc_sphere_pos_sphere_y_sign = rt_calc_sphere_pos_u_sphere_y_io_result_sign;
+  assign rt_calc_sphere_pos_sphere_y_exp = rt_calc_sphere_pos_u_sphere_y_io_result_exp;
+  assign rt_calc_sphere_pos_sphere_y_mant = rt_calc_sphere_pos_u_sphere_y_io_result_mant;
+  assign rt_calc_sphere_pos_x_incr_sign = 1'b0;
+  assign rt_calc_sphere_pos_x_incr_exp = (6'b011011);
+  assign rt_calc_sphere_pos_x_incr_mant = (13'b1001100110011);
+  assign rt_calc_sphere_pos_x_incr_final_sign = (rt_calc_sphere_pos_x_incr_sign ^ rt_calc_sphere_pos_dir_x);
+  assign rt_calc_sphere_pos_x_incr_final_exp = rt_calc_sphere_pos_x_incr_exp;
+  assign rt_calc_sphere_pos_x_incr_final_mant = rt_calc_sphere_pos_x_incr_mant;
+  assign rt_calc_sphere_pos_sphere_x_nxt_sign = rt_calc_sphere_pos_u_sphere_x_nxt_io_result_sign;
+  assign rt_calc_sphere_pos_sphere_x_nxt_exp = rt_calc_sphere_pos_u_sphere_x_nxt_io_result_exp;
+  assign rt_calc_sphere_pos_sphere_x_nxt_mant = rt_calc_sphere_pos_u_sphere_x_nxt_io_result_mant;
+  assign rt_calc_sphere_pos_x_boundary_sign = 1'b0;
+  assign rt_calc_sphere_pos_x_boundary_exp = (6'b100010);
+  assign rt_calc_sphere_pos_x_boundary_mant = (13'b1000000000000);
+  assign rt_sphere_center_x_sign = rt_calc_sphere_pos_sphere_x_sign;
+  assign rt_sphere_center_x_exp = rt_calc_sphere_pos_sphere_x_exp;
+  assign rt_sphere_center_x_mant = rt_calc_sphere_pos_sphere_x_mant;
+  assign rt_sphere_center_y_sign = rt_calc_sphere_pos_sphere_y_sign;
+  assign rt_sphere_center_y_exp = rt_calc_sphere_pos_sphere_y_exp;
+  assign rt_sphere_center_y_mant = rt_calc_sphere_pos_sphere_y_mant;
   assign rt_sphere_center_z_sign = 1'b0;
   assign rt_sphere_center_z_exp = (6'b100010);
   assign rt_sphere_center_z_mant = (13'b0100000000000);
@@ -15179,7 +16601,6 @@ module PanoCore (
   assign rt_rot_x_cos_sign = 1'b0;
   assign rt_rot_x_cos_exp = (6'b011110);
   assign rt_rot_x_cos_mant = (13'b1110001000010);
-  assign _zz_7_ = 1'b1;
   assign rt_ray_dir_rot_x_vld = rt_u_ray_dir_rot_x_io_result_vld;
   assign rt_ray_dir_rot_x_x_sign = rt_u_ray_dir_rot_x_io_result_x_sign;
   assign rt_ray_dir_rot_x_x_exp = rt_u_ray_dir_rot_x_io_result_x_exp;
@@ -15306,7 +16727,7 @@ module PanoCore (
   assign rt_plane_intersection_z_vld_delayed = rt_u_plane_z_int_io_result_vld;
   assign rt_plane_z_int_delayed_0 = rt_u_plane_z_int_io_result;
   assign rt_checker_color = (((rt_plane_x_int_delayed_1[14] ^ rt_plane_z_int_delayed_0[14]) ^ rt_plane_intersection_x_sign_delayed) ^ rt_plane_intersection_z_sign_delayed);
-  assign rt_plane_in_bounds = (($signed(_zz_8_) < $signed(_zz_9_)) && ($signed(_zz_10_) < $signed(_zz_11_)));
+  assign rt_plane_in_bounds = (($signed(_zz_16_) < $signed(_zz_17_)) && ($signed(_zz_18_) < $signed(_zz_19_)));
   assign rt_plane_intersects_final = (rt_plane_in_bounds && rt_plane_intersects_delayed);
   assign rt_shadow_ray_origin_x_sign = rt_plane_intersection_x_sign;
   assign rt_shadow_ray_origin_x_exp = rt_plane_intersection_x_exp;
@@ -15326,7 +16747,7 @@ module PanoCore (
   assign rt_shadow_ray_direction_z_sign_1_ = rt_shadow_ray_direction_z_sign;
   assign rt_shadow_ray_direction_z_exp_1_ = rt_shadow_ray_direction_z_exp;
   assign rt_shadow_ray_direction_z_mant_1_ = rt_shadow_ray_direction_z_mant;
-  assign rt_spot_light_final_delayed_vld = rt_u_shadow_sphere_intersect_io_early_intersects_vld;
+  assign rt_cam_sweep_pixel_delayed_vld = rt_u_shadow_sphere_intersect_io_early_intersects_vld;
   assign rt_shadow_sphere_intersects_delayed_1 = rt_u_shadow_sphere_intersect_io_early_intersects;
   assign rt_spot_light_vld = rt_u_dot_spot_light_io_result_vld;
   assign rt_spot_light_sign = rt_u_dot_spot_light_io_result_sign;
@@ -15334,8 +16755,8 @@ module PanoCore (
   assign rt_spot_light_mant = rt_u_dot_spot_light_io_result_mant;
   assign rt_spot_light_int_vld = rt_u_spot_light_int_io_result_vld;
   assign rt_spot_light_int_full = rt_u_spot_light_int_io_result;
-  assign rt_spot_light_int = (rt_spot_light_sign_regNext ? (9'b000000000) : _zz_12_);
-  assign rt_spot_light_final = (rt_spot_light_e8[8] ? (8'b11111111) : _zz_19_);
+  assign rt_spot_light_int = (rt_spot_light_sign_regNext ? (9'b000000000) : _zz_20_);
+  assign rt_spot_light_final = (rt_spot_light_e8[8] ? (8'b11111111) : _zz_27_);
   assign rt_sky_r = (8'b00000000);
   assign rt_sky_g = (8'b00000000);
   assign rt_sky_b = (8'b11100101);
@@ -15369,91 +16790,143 @@ module PanoCore (
   assign rt_yellow_sky_r = (8'b01110010);
   assign rt_yellow_sky_g = (8'b01110010);
   assign rt_yellow_sky_b = (8'b11100101);
+  assign rt_rt_pixel_vsync = rt_cam_sweep_pixel_delayed_vsync;
+  assign rt_rt_pixel_req = rt_cam_sweep_pixel_delayed_req;
+  assign rt_rt_pixel_eol = rt_cam_sweep_pixel_delayed_eol;
+  assign rt_rt_pixel_eof = rt_cam_sweep_pixel_delayed_eof;
   always @ (*) begin
-    if((rt_sphere_intersects_delayed && (! rt_plane_x_int_delayed_2)))begin
-      rt_color_r = rt_yellow_sky_r;
-      rt_color_g = rt_yellow_sky_g;
-      rt_color_b = rt_yellow_sky_b;
-    end else begin
-      if((rt_sphere_intersects_delayed && rt_plane_x_int_delayed_2))begin
-        if(rt_shadow_sphere_intersects_delayed_1)begin
-          rt_color_r = (rt_checker_color_delayed ? rt_yellow_shadow_red_r : rt_yellow_shadow_green_r);
-          rt_color_g = (rt_checker_color_delayed ? rt_yellow_shadow_red_g : rt_yellow_shadow_green_g);
-          rt_color_b = (rt_checker_color_delayed ? rt_yellow_shadow_red_b : rt_yellow_shadow_green_b);
-        end else begin
-          rt_color_r = (rt_checker_color_delayed ? rt_yellow_red_r : rt_yellow_green_r);
-          rt_color_g = (rt_checker_color_delayed ? rt_yellow_red_g : rt_yellow_green_g);
-          rt_color_b = (rt_checker_color_delayed ? rt_yellow_red_b : rt_yellow_green_b);
-        end
-      end
-    end
-    if(rt_sphere_intersects_delayed)begin
-      rt_color_r = (_zz_4_[8] ? (8'b11111111) : _zz_29_);
-      rt_color_g = (_zz_5_[8] ? (8'b11111111) : _zz_30_);
-      rt_color_b = (_zz_6_[8] ? (8'b11111111) : _zz_31_);
-    end else begin
-      if(rt_plane_x_int_delayed_2)begin
-        if(rt_shadow_sphere_intersects_delayed_1)begin
-          rt_color_r = (rt_checker_color_delayed ? rt_shadow_red_r : rt_shadow_green_r);
-          rt_color_g = (rt_checker_color_delayed ? rt_shadow_red_g : rt_shadow_green_g);
-          rt_color_b = (rt_checker_color_delayed ? rt_shadow_red_b : rt_shadow_green_b);
-        end else begin
-          rt_color_r = (rt_checker_color_delayed ? rt_red_r : rt_green_r);
-          rt_color_g = (rt_checker_color_delayed ? rt_red_g : rt_green_g);
-          rt_color_b = (rt_checker_color_delayed ? rt_red_b : rt_green_b);
-        end
-      end else begin
-        rt_color_r = rt_sky_r;
-        rt_color_g = rt_sky_g;
-        rt_color_b = rt_sky_b;
-      end
+    rt_rt_pixel_pixel_r = rt_cam_sweep_pixel_delayed_pixel_r;
+    rt_rt_pixel_pixel_g = rt_cam_sweep_pixel_delayed_pixel_g;
+    rt_rt_pixel_pixel_b = rt_cam_sweep_pixel_delayed_pixel_b;
+    if((((rt_cam_sweep_pixel_delayed_vld || rt_cam_sweep_pixel_delayed_vld) || rt_cam_sweep_pixel_delayed_vld) || rt_cam_sweep_pixel_delayed_vld))begin
+      rt_rt_pixel_pixel_r = _zz_1_;
+      rt_rt_pixel_pixel_g = _zz_2_;
+      rt_rt_pixel_pixel_b = _zz_3_;
     end
   end
 
   always @ (*) begin
-    if((! rt_plane_x_int_delayed_2))begin
+    if((rt_sphere_intersects_delayed && (! rt_plane_intersects_final_delayed_1)))begin
       _zz_1_ = rt_yellow_sky_r;
       _zz_2_ = rt_yellow_sky_g;
       _zz_3_ = rt_yellow_sky_b;
     end else begin
-      if(rt_shadow_sphere_intersects_delayed_1)begin
-        _zz_1_ = (rt_checker_color_delayed ? rt_yellow_shadow_red_r : rt_yellow_shadow_green_r);
-        _zz_2_ = (rt_checker_color_delayed ? rt_yellow_shadow_red_g : rt_yellow_shadow_green_g);
-        _zz_3_ = (rt_checker_color_delayed ? rt_yellow_shadow_red_b : rt_yellow_shadow_green_b);
+      if((rt_sphere_intersects_delayed && rt_plane_intersects_final_delayed_1))begin
+        if(rt_shadow_sphere_intersects_delayed_1)begin
+          _zz_1_ = (rt_checker_color_delayed ? rt_yellow_shadow_red_r : rt_yellow_shadow_green_r);
+          _zz_2_ = (rt_checker_color_delayed ? rt_yellow_shadow_red_g : rt_yellow_shadow_green_g);
+          _zz_3_ = (rt_checker_color_delayed ? rt_yellow_shadow_red_b : rt_yellow_shadow_green_b);
+        end else begin
+          _zz_1_ = (rt_checker_color_delayed ? rt_yellow_red_r : rt_yellow_green_r);
+          _zz_2_ = (rt_checker_color_delayed ? rt_yellow_red_g : rt_yellow_green_g);
+          _zz_3_ = (rt_checker_color_delayed ? rt_yellow_red_b : rt_yellow_green_b);
+        end
+      end
+    end
+    if(rt_sphere_intersects_delayed)begin
+      _zz_1_ = (_zz_7_[8] ? (8'b11111111) : _zz_37_);
+      _zz_2_ = (_zz_8_[8] ? (8'b11111111) : _zz_38_);
+      _zz_3_ = (_zz_9_[8] ? (8'b11111111) : _zz_39_);
+    end else begin
+      if(rt_plane_intersects_final_delayed_1)begin
+        if(rt_shadow_sphere_intersects_delayed_1)begin
+          _zz_1_ = (rt_checker_color_delayed ? rt_shadow_red_r : rt_shadow_green_r);
+          _zz_2_ = (rt_checker_color_delayed ? rt_shadow_red_g : rt_shadow_green_g);
+          _zz_3_ = (rt_checker_color_delayed ? rt_shadow_red_b : rt_shadow_green_b);
+        end else begin
+          _zz_1_ = (rt_checker_color_delayed ? rt_red_r : rt_green_r);
+          _zz_2_ = (rt_checker_color_delayed ? rt_red_g : rt_green_g);
+          _zz_3_ = (rt_checker_color_delayed ? rt_red_b : rt_green_b);
+        end
       end else begin
-        _zz_1_ = (rt_checker_color_delayed ? rt_yellow_red_r : rt_yellow_green_r);
-        _zz_2_ = (rt_checker_color_delayed ? rt_yellow_red_g : rt_yellow_green_g);
-        _zz_3_ = (rt_checker_color_delayed ? rt_yellow_red_b : rt_yellow_green_b);
+        _zz_1_ = rt_sky_r;
+        _zz_2_ = rt_sky_g;
+        _zz_3_ = rt_sky_b;
       end
     end
   end
 
-  assign _zz_4_ = (_zz_20_ + _zz_22_);
-  assign _zz_5_ = (_zz_23_ + _zz_25_);
-  assign _zz_6_ = (_zz_26_ + _zz_28_);
-  assign io_pixel_out_r = rt_color_r;
-  assign io_pixel_out_g = rt_color_g;
-  assign io_pixel_out_b = rt_color_b;
-  always @ (posedge clk) begin
-    rt_sphere_center_x_regNext_sign <= rt_sphere_center_x_sign;
-    rt_sphere_center_x_regNext_exp <= rt_sphere_center_x_exp;
-    rt_sphere_center_x_regNext_mant <= rt_sphere_center_x_mant;
-    rt_sphere_center_y_regNext_sign <= rt_sphere_center_y_sign;
-    rt_sphere_center_y_regNext_exp <= rt_sphere_center_y_exp;
-    rt_sphere_center_y_regNext_mant <= rt_sphere_center_y_mant;
+  always @ (*) begin
+    if((! rt_plane_intersects_final_delayed_1))begin
+      _zz_4_ = rt_yellow_sky_r;
+      _zz_5_ = rt_yellow_sky_g;
+      _zz_6_ = rt_yellow_sky_b;
+    end else begin
+      if(rt_shadow_sphere_intersects_delayed_1)begin
+        _zz_4_ = (rt_checker_color_delayed ? rt_yellow_shadow_red_r : rt_yellow_shadow_green_r);
+        _zz_5_ = (rt_checker_color_delayed ? rt_yellow_shadow_red_g : rt_yellow_shadow_green_g);
+        _zz_6_ = (rt_checker_color_delayed ? rt_yellow_shadow_red_b : rt_yellow_shadow_green_b);
+      end else begin
+        _zz_4_ = (rt_checker_color_delayed ? rt_yellow_red_r : rt_yellow_green_r);
+        _zz_5_ = (rt_checker_color_delayed ? rt_yellow_red_g : rt_yellow_green_g);
+        _zz_6_ = (rt_checker_color_delayed ? rt_yellow_red_b : rt_yellow_green_b);
+      end
+    end
+  end
+
+  assign _zz_7_ = (_zz_28_ + _zz_30_);
+  assign _zz_8_ = (_zz_31_ + _zz_33_);
+  assign _zz_9_ = (_zz_34_ + _zz_36_);
+  assign io_pixel_out_vsync = rt_rt_pixel_vsync;
+  assign io_pixel_out_req = rt_rt_pixel_req;
+  assign io_pixel_out_eol = rt_rt_pixel_eol;
+  assign io_pixel_out_eof = rt_rt_pixel_eof;
+  assign io_pixel_out_pixel_r = rt_rt_pixel_pixel_r;
+  assign io_pixel_out_pixel_g = rt_rt_pixel_pixel_g;
+  assign io_pixel_out_pixel_b = rt_rt_pixel_pixel_b;
+  always @ (posedge clk or posedge reset) begin
+    if (reset) begin
+      rt_calc_sphere_pos_s_time <= (8'b00101101);
+      rt_calc_sphere_pos_first_time <= 1'b1;
+      rt_calc_sphere_pos_sphere_x_vld <= 1'b0;
+      rt_calc_sphere_pos_sphere_x_sign <= 1'b0;
+      rt_calc_sphere_pos_sphere_x_exp <= (6'b000000);
+      rt_calc_sphere_pos_sphere_x_mant <= (13'b0000000000000);
+      rt_calc_sphere_pos_dir_x <= 1'b0;
+    end else begin
+      if(((io_pixel_in_req && io_pixel_in_eof) || rt_calc_sphere_pos_first_time))begin
+        if(($signed(rt_calc_sphere_pos_s_time) == $signed(_zz_11_)))begin
+          rt_calc_sphere_pos_s_time <= (8'b00000000);
+        end else begin
+          rt_calc_sphere_pos_s_time <= ($signed(rt_calc_sphere_pos_s_time) + $signed(_zz_12_));
+        end
+        rt_calc_sphere_pos_first_time <= 1'b0;
+      end
+      if(rt_calc_sphere_pos_first_time)begin
+        rt_calc_sphere_pos_sphere_x_vld <= 1'b1;
+        rt_calc_sphere_pos_sphere_x_sign <= 1'b0;
+        rt_calc_sphere_pos_sphere_x_exp <= (6'b100000);
+        rt_calc_sphere_pos_sphere_x_mant <= (13'b1000000000000);
+      end else begin
+        if((io_pixel_in_req && io_pixel_in_eof))begin
+          if(($signed(_zz_14_) < $signed(_zz_15_)))begin
+            rt_calc_sphere_pos_dir_x <= (! rt_calc_sphere_pos_dir_x);
+          end else begin
+            rt_calc_sphere_pos_sphere_x_sign <= rt_calc_sphere_pos_sphere_x_nxt_sign;
+            rt_calc_sphere_pos_sphere_x_exp <= rt_calc_sphere_pos_sphere_x_nxt_exp;
+            rt_calc_sphere_pos_sphere_x_mant <= rt_calc_sphere_pos_sphere_x_nxt_mant;
+          end
+          rt_calc_sphere_pos_sphere_x_vld <= 1'b1;
+        end else begin
+          rt_calc_sphere_pos_sphere_x_vld <= 1'b0;
+        end
+      end
+    end
   end
 
   always @ (posedge clk) begin
+    rt_calc_sphere_pos_s_time_q <= ($signed(rt_calc_sphere_pos_s_time) * $signed(rt_calc_sphere_pos_s_time_m90));
+    rt_calc_sphere_pos_first_time_regNext <= rt_calc_sphere_pos_first_time;
     rt_plane_intersection_x_sign_delayed <= rt_plane_intersection_x_sign;
     rt_plane_intersection_z_sign_delayed <= rt_plane_intersection_z_sign;
     rt_plane_intersects_delayed <= rt_plane_intersects;
     rt_spot_light_sign_regNext <= rt_spot_light_sign;
     rt_spot_light_e2_vld <= rt_spot_light_int_vld;
-    rt_spot_light_e2 <= _zz_13_[8:0];
+    rt_spot_light_e2 <= _zz_21_[8:0];
     rt_spot_light_e4_vld <= rt_spot_light_e2_vld;
-    rt_spot_light_e4 <= _zz_15_[8:0];
+    rt_spot_light_e4 <= _zz_23_[8:0];
     rt_spot_light_final_vld <= rt_spot_light_e4_vld;
-    rt_spot_light_e8 <= _zz_17_[8:0];
+    rt_spot_light_e8 <= _zz_25_[8:0];
     rt_plane_intersects_final_delay_1 <= rt_plane_intersects_final;
     rt_plane_intersects_final_delay_2 <= rt_plane_intersects_final_delay_1;
     rt_plane_intersects_final_delay_3 <= rt_plane_intersects_final_delay_2;
@@ -15465,7 +16938,7 @@ module PanoCore (
     rt_plane_intersects_final_delay_9 <= rt_plane_intersects_final_delay_8;
     rt_plane_intersects_final_delay_10 <= rt_plane_intersects_final_delay_9;
     rt_plane_intersects_final_delay_11 <= rt_plane_intersects_final_delay_10;
-    rt_plane_x_int_delayed_2 <= rt_plane_intersects_final_delay_11;
+    rt_plane_intersects_final_delayed_1 <= rt_plane_intersects_final_delay_11;
     rt_checker_color_delay_1 <= rt_checker_color;
     rt_checker_color_delay_2 <= rt_checker_color_delay_1;
     rt_checker_color_delay_3 <= rt_checker_color_delay_2;
@@ -15530,6 +17003,631 @@ module PanoCore (
     rt_spot_light_final_delay_19 <= rt_spot_light_final_delay_18;
     rt_spot_light_final_delay_20 <= rt_spot_light_final_delay_19;
     rt_spot_light_final_delayed <= rt_spot_light_final_delay_20;
+    rt_cam_sweep_pixel_delay_1_vsync <= rt_cam_sweep_pixel_vsync;
+    rt_cam_sweep_pixel_delay_1_req <= rt_cam_sweep_pixel_req;
+    rt_cam_sweep_pixel_delay_1_eol <= rt_cam_sweep_pixel_eol;
+    rt_cam_sweep_pixel_delay_1_eof <= rt_cam_sweep_pixel_eof;
+    rt_cam_sweep_pixel_delay_1_pixel_r <= rt_cam_sweep_pixel_pixel_r;
+    rt_cam_sweep_pixel_delay_1_pixel_g <= rt_cam_sweep_pixel_pixel_g;
+    rt_cam_sweep_pixel_delay_1_pixel_b <= rt_cam_sweep_pixel_pixel_b;
+    rt_cam_sweep_pixel_delay_2_vsync <= rt_cam_sweep_pixel_delay_1_vsync;
+    rt_cam_sweep_pixel_delay_2_req <= rt_cam_sweep_pixel_delay_1_req;
+    rt_cam_sweep_pixel_delay_2_eol <= rt_cam_sweep_pixel_delay_1_eol;
+    rt_cam_sweep_pixel_delay_2_eof <= rt_cam_sweep_pixel_delay_1_eof;
+    rt_cam_sweep_pixel_delay_2_pixel_r <= rt_cam_sweep_pixel_delay_1_pixel_r;
+    rt_cam_sweep_pixel_delay_2_pixel_g <= rt_cam_sweep_pixel_delay_1_pixel_g;
+    rt_cam_sweep_pixel_delay_2_pixel_b <= rt_cam_sweep_pixel_delay_1_pixel_b;
+    rt_cam_sweep_pixel_delay_3_vsync <= rt_cam_sweep_pixel_delay_2_vsync;
+    rt_cam_sweep_pixel_delay_3_req <= rt_cam_sweep_pixel_delay_2_req;
+    rt_cam_sweep_pixel_delay_3_eol <= rt_cam_sweep_pixel_delay_2_eol;
+    rt_cam_sweep_pixel_delay_3_eof <= rt_cam_sweep_pixel_delay_2_eof;
+    rt_cam_sweep_pixel_delay_3_pixel_r <= rt_cam_sweep_pixel_delay_2_pixel_r;
+    rt_cam_sweep_pixel_delay_3_pixel_g <= rt_cam_sweep_pixel_delay_2_pixel_g;
+    rt_cam_sweep_pixel_delay_3_pixel_b <= rt_cam_sweep_pixel_delay_2_pixel_b;
+    rt_cam_sweep_pixel_delay_4_vsync <= rt_cam_sweep_pixel_delay_3_vsync;
+    rt_cam_sweep_pixel_delay_4_req <= rt_cam_sweep_pixel_delay_3_req;
+    rt_cam_sweep_pixel_delay_4_eol <= rt_cam_sweep_pixel_delay_3_eol;
+    rt_cam_sweep_pixel_delay_4_eof <= rt_cam_sweep_pixel_delay_3_eof;
+    rt_cam_sweep_pixel_delay_4_pixel_r <= rt_cam_sweep_pixel_delay_3_pixel_r;
+    rt_cam_sweep_pixel_delay_4_pixel_g <= rt_cam_sweep_pixel_delay_3_pixel_g;
+    rt_cam_sweep_pixel_delay_4_pixel_b <= rt_cam_sweep_pixel_delay_3_pixel_b;
+    rt_cam_sweep_pixel_delay_5_vsync <= rt_cam_sweep_pixel_delay_4_vsync;
+    rt_cam_sweep_pixel_delay_5_req <= rt_cam_sweep_pixel_delay_4_req;
+    rt_cam_sweep_pixel_delay_5_eol <= rt_cam_sweep_pixel_delay_4_eol;
+    rt_cam_sweep_pixel_delay_5_eof <= rt_cam_sweep_pixel_delay_4_eof;
+    rt_cam_sweep_pixel_delay_5_pixel_r <= rt_cam_sweep_pixel_delay_4_pixel_r;
+    rt_cam_sweep_pixel_delay_5_pixel_g <= rt_cam_sweep_pixel_delay_4_pixel_g;
+    rt_cam_sweep_pixel_delay_5_pixel_b <= rt_cam_sweep_pixel_delay_4_pixel_b;
+    rt_cam_sweep_pixel_delay_6_vsync <= rt_cam_sweep_pixel_delay_5_vsync;
+    rt_cam_sweep_pixel_delay_6_req <= rt_cam_sweep_pixel_delay_5_req;
+    rt_cam_sweep_pixel_delay_6_eol <= rt_cam_sweep_pixel_delay_5_eol;
+    rt_cam_sweep_pixel_delay_6_eof <= rt_cam_sweep_pixel_delay_5_eof;
+    rt_cam_sweep_pixel_delay_6_pixel_r <= rt_cam_sweep_pixel_delay_5_pixel_r;
+    rt_cam_sweep_pixel_delay_6_pixel_g <= rt_cam_sweep_pixel_delay_5_pixel_g;
+    rt_cam_sweep_pixel_delay_6_pixel_b <= rt_cam_sweep_pixel_delay_5_pixel_b;
+    rt_cam_sweep_pixel_delay_7_vsync <= rt_cam_sweep_pixel_delay_6_vsync;
+    rt_cam_sweep_pixel_delay_7_req <= rt_cam_sweep_pixel_delay_6_req;
+    rt_cam_sweep_pixel_delay_7_eol <= rt_cam_sweep_pixel_delay_6_eol;
+    rt_cam_sweep_pixel_delay_7_eof <= rt_cam_sweep_pixel_delay_6_eof;
+    rt_cam_sweep_pixel_delay_7_pixel_r <= rt_cam_sweep_pixel_delay_6_pixel_r;
+    rt_cam_sweep_pixel_delay_7_pixel_g <= rt_cam_sweep_pixel_delay_6_pixel_g;
+    rt_cam_sweep_pixel_delay_7_pixel_b <= rt_cam_sweep_pixel_delay_6_pixel_b;
+    rt_cam_sweep_pixel_delay_8_vsync <= rt_cam_sweep_pixel_delay_7_vsync;
+    rt_cam_sweep_pixel_delay_8_req <= rt_cam_sweep_pixel_delay_7_req;
+    rt_cam_sweep_pixel_delay_8_eol <= rt_cam_sweep_pixel_delay_7_eol;
+    rt_cam_sweep_pixel_delay_8_eof <= rt_cam_sweep_pixel_delay_7_eof;
+    rt_cam_sweep_pixel_delay_8_pixel_r <= rt_cam_sweep_pixel_delay_7_pixel_r;
+    rt_cam_sweep_pixel_delay_8_pixel_g <= rt_cam_sweep_pixel_delay_7_pixel_g;
+    rt_cam_sweep_pixel_delay_8_pixel_b <= rt_cam_sweep_pixel_delay_7_pixel_b;
+    rt_cam_sweep_pixel_delay_9_vsync <= rt_cam_sweep_pixel_delay_8_vsync;
+    rt_cam_sweep_pixel_delay_9_req <= rt_cam_sweep_pixel_delay_8_req;
+    rt_cam_sweep_pixel_delay_9_eol <= rt_cam_sweep_pixel_delay_8_eol;
+    rt_cam_sweep_pixel_delay_9_eof <= rt_cam_sweep_pixel_delay_8_eof;
+    rt_cam_sweep_pixel_delay_9_pixel_r <= rt_cam_sweep_pixel_delay_8_pixel_r;
+    rt_cam_sweep_pixel_delay_9_pixel_g <= rt_cam_sweep_pixel_delay_8_pixel_g;
+    rt_cam_sweep_pixel_delay_9_pixel_b <= rt_cam_sweep_pixel_delay_8_pixel_b;
+    rt_cam_sweep_pixel_delay_10_vsync <= rt_cam_sweep_pixel_delay_9_vsync;
+    rt_cam_sweep_pixel_delay_10_req <= rt_cam_sweep_pixel_delay_9_req;
+    rt_cam_sweep_pixel_delay_10_eol <= rt_cam_sweep_pixel_delay_9_eol;
+    rt_cam_sweep_pixel_delay_10_eof <= rt_cam_sweep_pixel_delay_9_eof;
+    rt_cam_sweep_pixel_delay_10_pixel_r <= rt_cam_sweep_pixel_delay_9_pixel_r;
+    rt_cam_sweep_pixel_delay_10_pixel_g <= rt_cam_sweep_pixel_delay_9_pixel_g;
+    rt_cam_sweep_pixel_delay_10_pixel_b <= rt_cam_sweep_pixel_delay_9_pixel_b;
+    rt_cam_sweep_pixel_delay_11_vsync <= rt_cam_sweep_pixel_delay_10_vsync;
+    rt_cam_sweep_pixel_delay_11_req <= rt_cam_sweep_pixel_delay_10_req;
+    rt_cam_sweep_pixel_delay_11_eol <= rt_cam_sweep_pixel_delay_10_eol;
+    rt_cam_sweep_pixel_delay_11_eof <= rt_cam_sweep_pixel_delay_10_eof;
+    rt_cam_sweep_pixel_delay_11_pixel_r <= rt_cam_sweep_pixel_delay_10_pixel_r;
+    rt_cam_sweep_pixel_delay_11_pixel_g <= rt_cam_sweep_pixel_delay_10_pixel_g;
+    rt_cam_sweep_pixel_delay_11_pixel_b <= rt_cam_sweep_pixel_delay_10_pixel_b;
+    rt_cam_sweep_pixel_delay_12_vsync <= rt_cam_sweep_pixel_delay_11_vsync;
+    rt_cam_sweep_pixel_delay_12_req <= rt_cam_sweep_pixel_delay_11_req;
+    rt_cam_sweep_pixel_delay_12_eol <= rt_cam_sweep_pixel_delay_11_eol;
+    rt_cam_sweep_pixel_delay_12_eof <= rt_cam_sweep_pixel_delay_11_eof;
+    rt_cam_sweep_pixel_delay_12_pixel_r <= rt_cam_sweep_pixel_delay_11_pixel_r;
+    rt_cam_sweep_pixel_delay_12_pixel_g <= rt_cam_sweep_pixel_delay_11_pixel_g;
+    rt_cam_sweep_pixel_delay_12_pixel_b <= rt_cam_sweep_pixel_delay_11_pixel_b;
+    rt_cam_sweep_pixel_delay_13_vsync <= rt_cam_sweep_pixel_delay_12_vsync;
+    rt_cam_sweep_pixel_delay_13_req <= rt_cam_sweep_pixel_delay_12_req;
+    rt_cam_sweep_pixel_delay_13_eol <= rt_cam_sweep_pixel_delay_12_eol;
+    rt_cam_sweep_pixel_delay_13_eof <= rt_cam_sweep_pixel_delay_12_eof;
+    rt_cam_sweep_pixel_delay_13_pixel_r <= rt_cam_sweep_pixel_delay_12_pixel_r;
+    rt_cam_sweep_pixel_delay_13_pixel_g <= rt_cam_sweep_pixel_delay_12_pixel_g;
+    rt_cam_sweep_pixel_delay_13_pixel_b <= rt_cam_sweep_pixel_delay_12_pixel_b;
+    rt_cam_sweep_pixel_delay_14_vsync <= rt_cam_sweep_pixel_delay_13_vsync;
+    rt_cam_sweep_pixel_delay_14_req <= rt_cam_sweep_pixel_delay_13_req;
+    rt_cam_sweep_pixel_delay_14_eol <= rt_cam_sweep_pixel_delay_13_eol;
+    rt_cam_sweep_pixel_delay_14_eof <= rt_cam_sweep_pixel_delay_13_eof;
+    rt_cam_sweep_pixel_delay_14_pixel_r <= rt_cam_sweep_pixel_delay_13_pixel_r;
+    rt_cam_sweep_pixel_delay_14_pixel_g <= rt_cam_sweep_pixel_delay_13_pixel_g;
+    rt_cam_sweep_pixel_delay_14_pixel_b <= rt_cam_sweep_pixel_delay_13_pixel_b;
+    rt_cam_sweep_pixel_delay_15_vsync <= rt_cam_sweep_pixel_delay_14_vsync;
+    rt_cam_sweep_pixel_delay_15_req <= rt_cam_sweep_pixel_delay_14_req;
+    rt_cam_sweep_pixel_delay_15_eol <= rt_cam_sweep_pixel_delay_14_eol;
+    rt_cam_sweep_pixel_delay_15_eof <= rt_cam_sweep_pixel_delay_14_eof;
+    rt_cam_sweep_pixel_delay_15_pixel_r <= rt_cam_sweep_pixel_delay_14_pixel_r;
+    rt_cam_sweep_pixel_delay_15_pixel_g <= rt_cam_sweep_pixel_delay_14_pixel_g;
+    rt_cam_sweep_pixel_delay_15_pixel_b <= rt_cam_sweep_pixel_delay_14_pixel_b;
+    rt_cam_sweep_pixel_delay_16_vsync <= rt_cam_sweep_pixel_delay_15_vsync;
+    rt_cam_sweep_pixel_delay_16_req <= rt_cam_sweep_pixel_delay_15_req;
+    rt_cam_sweep_pixel_delay_16_eol <= rt_cam_sweep_pixel_delay_15_eol;
+    rt_cam_sweep_pixel_delay_16_eof <= rt_cam_sweep_pixel_delay_15_eof;
+    rt_cam_sweep_pixel_delay_16_pixel_r <= rt_cam_sweep_pixel_delay_15_pixel_r;
+    rt_cam_sweep_pixel_delay_16_pixel_g <= rt_cam_sweep_pixel_delay_15_pixel_g;
+    rt_cam_sweep_pixel_delay_16_pixel_b <= rt_cam_sweep_pixel_delay_15_pixel_b;
+    rt_cam_sweep_pixel_delay_17_vsync <= rt_cam_sweep_pixel_delay_16_vsync;
+    rt_cam_sweep_pixel_delay_17_req <= rt_cam_sweep_pixel_delay_16_req;
+    rt_cam_sweep_pixel_delay_17_eol <= rt_cam_sweep_pixel_delay_16_eol;
+    rt_cam_sweep_pixel_delay_17_eof <= rt_cam_sweep_pixel_delay_16_eof;
+    rt_cam_sweep_pixel_delay_17_pixel_r <= rt_cam_sweep_pixel_delay_16_pixel_r;
+    rt_cam_sweep_pixel_delay_17_pixel_g <= rt_cam_sweep_pixel_delay_16_pixel_g;
+    rt_cam_sweep_pixel_delay_17_pixel_b <= rt_cam_sweep_pixel_delay_16_pixel_b;
+    rt_cam_sweep_pixel_delay_18_vsync <= rt_cam_sweep_pixel_delay_17_vsync;
+    rt_cam_sweep_pixel_delay_18_req <= rt_cam_sweep_pixel_delay_17_req;
+    rt_cam_sweep_pixel_delay_18_eol <= rt_cam_sweep_pixel_delay_17_eol;
+    rt_cam_sweep_pixel_delay_18_eof <= rt_cam_sweep_pixel_delay_17_eof;
+    rt_cam_sweep_pixel_delay_18_pixel_r <= rt_cam_sweep_pixel_delay_17_pixel_r;
+    rt_cam_sweep_pixel_delay_18_pixel_g <= rt_cam_sweep_pixel_delay_17_pixel_g;
+    rt_cam_sweep_pixel_delay_18_pixel_b <= rt_cam_sweep_pixel_delay_17_pixel_b;
+    rt_cam_sweep_pixel_delay_19_vsync <= rt_cam_sweep_pixel_delay_18_vsync;
+    rt_cam_sweep_pixel_delay_19_req <= rt_cam_sweep_pixel_delay_18_req;
+    rt_cam_sweep_pixel_delay_19_eol <= rt_cam_sweep_pixel_delay_18_eol;
+    rt_cam_sweep_pixel_delay_19_eof <= rt_cam_sweep_pixel_delay_18_eof;
+    rt_cam_sweep_pixel_delay_19_pixel_r <= rt_cam_sweep_pixel_delay_18_pixel_r;
+    rt_cam_sweep_pixel_delay_19_pixel_g <= rt_cam_sweep_pixel_delay_18_pixel_g;
+    rt_cam_sweep_pixel_delay_19_pixel_b <= rt_cam_sweep_pixel_delay_18_pixel_b;
+    rt_cam_sweep_pixel_delay_20_vsync <= rt_cam_sweep_pixel_delay_19_vsync;
+    rt_cam_sweep_pixel_delay_20_req <= rt_cam_sweep_pixel_delay_19_req;
+    rt_cam_sweep_pixel_delay_20_eol <= rt_cam_sweep_pixel_delay_19_eol;
+    rt_cam_sweep_pixel_delay_20_eof <= rt_cam_sweep_pixel_delay_19_eof;
+    rt_cam_sweep_pixel_delay_20_pixel_r <= rt_cam_sweep_pixel_delay_19_pixel_r;
+    rt_cam_sweep_pixel_delay_20_pixel_g <= rt_cam_sweep_pixel_delay_19_pixel_g;
+    rt_cam_sweep_pixel_delay_20_pixel_b <= rt_cam_sweep_pixel_delay_19_pixel_b;
+    rt_cam_sweep_pixel_delay_21_vsync <= rt_cam_sweep_pixel_delay_20_vsync;
+    rt_cam_sweep_pixel_delay_21_req <= rt_cam_sweep_pixel_delay_20_req;
+    rt_cam_sweep_pixel_delay_21_eol <= rt_cam_sweep_pixel_delay_20_eol;
+    rt_cam_sweep_pixel_delay_21_eof <= rt_cam_sweep_pixel_delay_20_eof;
+    rt_cam_sweep_pixel_delay_21_pixel_r <= rt_cam_sweep_pixel_delay_20_pixel_r;
+    rt_cam_sweep_pixel_delay_21_pixel_g <= rt_cam_sweep_pixel_delay_20_pixel_g;
+    rt_cam_sweep_pixel_delay_21_pixel_b <= rt_cam_sweep_pixel_delay_20_pixel_b;
+    rt_cam_sweep_pixel_delay_22_vsync <= rt_cam_sweep_pixel_delay_21_vsync;
+    rt_cam_sweep_pixel_delay_22_req <= rt_cam_sweep_pixel_delay_21_req;
+    rt_cam_sweep_pixel_delay_22_eol <= rt_cam_sweep_pixel_delay_21_eol;
+    rt_cam_sweep_pixel_delay_22_eof <= rt_cam_sweep_pixel_delay_21_eof;
+    rt_cam_sweep_pixel_delay_22_pixel_r <= rt_cam_sweep_pixel_delay_21_pixel_r;
+    rt_cam_sweep_pixel_delay_22_pixel_g <= rt_cam_sweep_pixel_delay_21_pixel_g;
+    rt_cam_sweep_pixel_delay_22_pixel_b <= rt_cam_sweep_pixel_delay_21_pixel_b;
+    rt_cam_sweep_pixel_delay_23_vsync <= rt_cam_sweep_pixel_delay_22_vsync;
+    rt_cam_sweep_pixel_delay_23_req <= rt_cam_sweep_pixel_delay_22_req;
+    rt_cam_sweep_pixel_delay_23_eol <= rt_cam_sweep_pixel_delay_22_eol;
+    rt_cam_sweep_pixel_delay_23_eof <= rt_cam_sweep_pixel_delay_22_eof;
+    rt_cam_sweep_pixel_delay_23_pixel_r <= rt_cam_sweep_pixel_delay_22_pixel_r;
+    rt_cam_sweep_pixel_delay_23_pixel_g <= rt_cam_sweep_pixel_delay_22_pixel_g;
+    rt_cam_sweep_pixel_delay_23_pixel_b <= rt_cam_sweep_pixel_delay_22_pixel_b;
+    rt_cam_sweep_pixel_delay_24_vsync <= rt_cam_sweep_pixel_delay_23_vsync;
+    rt_cam_sweep_pixel_delay_24_req <= rt_cam_sweep_pixel_delay_23_req;
+    rt_cam_sweep_pixel_delay_24_eol <= rt_cam_sweep_pixel_delay_23_eol;
+    rt_cam_sweep_pixel_delay_24_eof <= rt_cam_sweep_pixel_delay_23_eof;
+    rt_cam_sweep_pixel_delay_24_pixel_r <= rt_cam_sweep_pixel_delay_23_pixel_r;
+    rt_cam_sweep_pixel_delay_24_pixel_g <= rt_cam_sweep_pixel_delay_23_pixel_g;
+    rt_cam_sweep_pixel_delay_24_pixel_b <= rt_cam_sweep_pixel_delay_23_pixel_b;
+    rt_cam_sweep_pixel_delay_25_vsync <= rt_cam_sweep_pixel_delay_24_vsync;
+    rt_cam_sweep_pixel_delay_25_req <= rt_cam_sweep_pixel_delay_24_req;
+    rt_cam_sweep_pixel_delay_25_eol <= rt_cam_sweep_pixel_delay_24_eol;
+    rt_cam_sweep_pixel_delay_25_eof <= rt_cam_sweep_pixel_delay_24_eof;
+    rt_cam_sweep_pixel_delay_25_pixel_r <= rt_cam_sweep_pixel_delay_24_pixel_r;
+    rt_cam_sweep_pixel_delay_25_pixel_g <= rt_cam_sweep_pixel_delay_24_pixel_g;
+    rt_cam_sweep_pixel_delay_25_pixel_b <= rt_cam_sweep_pixel_delay_24_pixel_b;
+    rt_cam_sweep_pixel_delay_26_vsync <= rt_cam_sweep_pixel_delay_25_vsync;
+    rt_cam_sweep_pixel_delay_26_req <= rt_cam_sweep_pixel_delay_25_req;
+    rt_cam_sweep_pixel_delay_26_eol <= rt_cam_sweep_pixel_delay_25_eol;
+    rt_cam_sweep_pixel_delay_26_eof <= rt_cam_sweep_pixel_delay_25_eof;
+    rt_cam_sweep_pixel_delay_26_pixel_r <= rt_cam_sweep_pixel_delay_25_pixel_r;
+    rt_cam_sweep_pixel_delay_26_pixel_g <= rt_cam_sweep_pixel_delay_25_pixel_g;
+    rt_cam_sweep_pixel_delay_26_pixel_b <= rt_cam_sweep_pixel_delay_25_pixel_b;
+    rt_cam_sweep_pixel_delay_27_vsync <= rt_cam_sweep_pixel_delay_26_vsync;
+    rt_cam_sweep_pixel_delay_27_req <= rt_cam_sweep_pixel_delay_26_req;
+    rt_cam_sweep_pixel_delay_27_eol <= rt_cam_sweep_pixel_delay_26_eol;
+    rt_cam_sweep_pixel_delay_27_eof <= rt_cam_sweep_pixel_delay_26_eof;
+    rt_cam_sweep_pixel_delay_27_pixel_r <= rt_cam_sweep_pixel_delay_26_pixel_r;
+    rt_cam_sweep_pixel_delay_27_pixel_g <= rt_cam_sweep_pixel_delay_26_pixel_g;
+    rt_cam_sweep_pixel_delay_27_pixel_b <= rt_cam_sweep_pixel_delay_26_pixel_b;
+    rt_cam_sweep_pixel_delay_28_vsync <= rt_cam_sweep_pixel_delay_27_vsync;
+    rt_cam_sweep_pixel_delay_28_req <= rt_cam_sweep_pixel_delay_27_req;
+    rt_cam_sweep_pixel_delay_28_eol <= rt_cam_sweep_pixel_delay_27_eol;
+    rt_cam_sweep_pixel_delay_28_eof <= rt_cam_sweep_pixel_delay_27_eof;
+    rt_cam_sweep_pixel_delay_28_pixel_r <= rt_cam_sweep_pixel_delay_27_pixel_r;
+    rt_cam_sweep_pixel_delay_28_pixel_g <= rt_cam_sweep_pixel_delay_27_pixel_g;
+    rt_cam_sweep_pixel_delay_28_pixel_b <= rt_cam_sweep_pixel_delay_27_pixel_b;
+    rt_cam_sweep_pixel_delay_29_vsync <= rt_cam_sweep_pixel_delay_28_vsync;
+    rt_cam_sweep_pixel_delay_29_req <= rt_cam_sweep_pixel_delay_28_req;
+    rt_cam_sweep_pixel_delay_29_eol <= rt_cam_sweep_pixel_delay_28_eol;
+    rt_cam_sweep_pixel_delay_29_eof <= rt_cam_sweep_pixel_delay_28_eof;
+    rt_cam_sweep_pixel_delay_29_pixel_r <= rt_cam_sweep_pixel_delay_28_pixel_r;
+    rt_cam_sweep_pixel_delay_29_pixel_g <= rt_cam_sweep_pixel_delay_28_pixel_g;
+    rt_cam_sweep_pixel_delay_29_pixel_b <= rt_cam_sweep_pixel_delay_28_pixel_b;
+    rt_cam_sweep_pixel_delay_30_vsync <= rt_cam_sweep_pixel_delay_29_vsync;
+    rt_cam_sweep_pixel_delay_30_req <= rt_cam_sweep_pixel_delay_29_req;
+    rt_cam_sweep_pixel_delay_30_eol <= rt_cam_sweep_pixel_delay_29_eol;
+    rt_cam_sweep_pixel_delay_30_eof <= rt_cam_sweep_pixel_delay_29_eof;
+    rt_cam_sweep_pixel_delay_30_pixel_r <= rt_cam_sweep_pixel_delay_29_pixel_r;
+    rt_cam_sweep_pixel_delay_30_pixel_g <= rt_cam_sweep_pixel_delay_29_pixel_g;
+    rt_cam_sweep_pixel_delay_30_pixel_b <= rt_cam_sweep_pixel_delay_29_pixel_b;
+    rt_cam_sweep_pixel_delay_31_vsync <= rt_cam_sweep_pixel_delay_30_vsync;
+    rt_cam_sweep_pixel_delay_31_req <= rt_cam_sweep_pixel_delay_30_req;
+    rt_cam_sweep_pixel_delay_31_eol <= rt_cam_sweep_pixel_delay_30_eol;
+    rt_cam_sweep_pixel_delay_31_eof <= rt_cam_sweep_pixel_delay_30_eof;
+    rt_cam_sweep_pixel_delay_31_pixel_r <= rt_cam_sweep_pixel_delay_30_pixel_r;
+    rt_cam_sweep_pixel_delay_31_pixel_g <= rt_cam_sweep_pixel_delay_30_pixel_g;
+    rt_cam_sweep_pixel_delay_31_pixel_b <= rt_cam_sweep_pixel_delay_30_pixel_b;
+    rt_cam_sweep_pixel_delay_32_vsync <= rt_cam_sweep_pixel_delay_31_vsync;
+    rt_cam_sweep_pixel_delay_32_req <= rt_cam_sweep_pixel_delay_31_req;
+    rt_cam_sweep_pixel_delay_32_eol <= rt_cam_sweep_pixel_delay_31_eol;
+    rt_cam_sweep_pixel_delay_32_eof <= rt_cam_sweep_pixel_delay_31_eof;
+    rt_cam_sweep_pixel_delay_32_pixel_r <= rt_cam_sweep_pixel_delay_31_pixel_r;
+    rt_cam_sweep_pixel_delay_32_pixel_g <= rt_cam_sweep_pixel_delay_31_pixel_g;
+    rt_cam_sweep_pixel_delay_32_pixel_b <= rt_cam_sweep_pixel_delay_31_pixel_b;
+    rt_cam_sweep_pixel_delay_33_vsync <= rt_cam_sweep_pixel_delay_32_vsync;
+    rt_cam_sweep_pixel_delay_33_req <= rt_cam_sweep_pixel_delay_32_req;
+    rt_cam_sweep_pixel_delay_33_eol <= rt_cam_sweep_pixel_delay_32_eol;
+    rt_cam_sweep_pixel_delay_33_eof <= rt_cam_sweep_pixel_delay_32_eof;
+    rt_cam_sweep_pixel_delay_33_pixel_r <= rt_cam_sweep_pixel_delay_32_pixel_r;
+    rt_cam_sweep_pixel_delay_33_pixel_g <= rt_cam_sweep_pixel_delay_32_pixel_g;
+    rt_cam_sweep_pixel_delay_33_pixel_b <= rt_cam_sweep_pixel_delay_32_pixel_b;
+    rt_cam_sweep_pixel_delay_34_vsync <= rt_cam_sweep_pixel_delay_33_vsync;
+    rt_cam_sweep_pixel_delay_34_req <= rt_cam_sweep_pixel_delay_33_req;
+    rt_cam_sweep_pixel_delay_34_eol <= rt_cam_sweep_pixel_delay_33_eol;
+    rt_cam_sweep_pixel_delay_34_eof <= rt_cam_sweep_pixel_delay_33_eof;
+    rt_cam_sweep_pixel_delay_34_pixel_r <= rt_cam_sweep_pixel_delay_33_pixel_r;
+    rt_cam_sweep_pixel_delay_34_pixel_g <= rt_cam_sweep_pixel_delay_33_pixel_g;
+    rt_cam_sweep_pixel_delay_34_pixel_b <= rt_cam_sweep_pixel_delay_33_pixel_b;
+    rt_cam_sweep_pixel_delay_35_vsync <= rt_cam_sweep_pixel_delay_34_vsync;
+    rt_cam_sweep_pixel_delay_35_req <= rt_cam_sweep_pixel_delay_34_req;
+    rt_cam_sweep_pixel_delay_35_eol <= rt_cam_sweep_pixel_delay_34_eol;
+    rt_cam_sweep_pixel_delay_35_eof <= rt_cam_sweep_pixel_delay_34_eof;
+    rt_cam_sweep_pixel_delay_35_pixel_r <= rt_cam_sweep_pixel_delay_34_pixel_r;
+    rt_cam_sweep_pixel_delay_35_pixel_g <= rt_cam_sweep_pixel_delay_34_pixel_g;
+    rt_cam_sweep_pixel_delay_35_pixel_b <= rt_cam_sweep_pixel_delay_34_pixel_b;
+    rt_cam_sweep_pixel_delay_36_vsync <= rt_cam_sweep_pixel_delay_35_vsync;
+    rt_cam_sweep_pixel_delay_36_req <= rt_cam_sweep_pixel_delay_35_req;
+    rt_cam_sweep_pixel_delay_36_eol <= rt_cam_sweep_pixel_delay_35_eol;
+    rt_cam_sweep_pixel_delay_36_eof <= rt_cam_sweep_pixel_delay_35_eof;
+    rt_cam_sweep_pixel_delay_36_pixel_r <= rt_cam_sweep_pixel_delay_35_pixel_r;
+    rt_cam_sweep_pixel_delay_36_pixel_g <= rt_cam_sweep_pixel_delay_35_pixel_g;
+    rt_cam_sweep_pixel_delay_36_pixel_b <= rt_cam_sweep_pixel_delay_35_pixel_b;
+    rt_cam_sweep_pixel_delay_37_vsync <= rt_cam_sweep_pixel_delay_36_vsync;
+    rt_cam_sweep_pixel_delay_37_req <= rt_cam_sweep_pixel_delay_36_req;
+    rt_cam_sweep_pixel_delay_37_eol <= rt_cam_sweep_pixel_delay_36_eol;
+    rt_cam_sweep_pixel_delay_37_eof <= rt_cam_sweep_pixel_delay_36_eof;
+    rt_cam_sweep_pixel_delay_37_pixel_r <= rt_cam_sweep_pixel_delay_36_pixel_r;
+    rt_cam_sweep_pixel_delay_37_pixel_g <= rt_cam_sweep_pixel_delay_36_pixel_g;
+    rt_cam_sweep_pixel_delay_37_pixel_b <= rt_cam_sweep_pixel_delay_36_pixel_b;
+    rt_cam_sweep_pixel_delay_38_vsync <= rt_cam_sweep_pixel_delay_37_vsync;
+    rt_cam_sweep_pixel_delay_38_req <= rt_cam_sweep_pixel_delay_37_req;
+    rt_cam_sweep_pixel_delay_38_eol <= rt_cam_sweep_pixel_delay_37_eol;
+    rt_cam_sweep_pixel_delay_38_eof <= rt_cam_sweep_pixel_delay_37_eof;
+    rt_cam_sweep_pixel_delay_38_pixel_r <= rt_cam_sweep_pixel_delay_37_pixel_r;
+    rt_cam_sweep_pixel_delay_38_pixel_g <= rt_cam_sweep_pixel_delay_37_pixel_g;
+    rt_cam_sweep_pixel_delay_38_pixel_b <= rt_cam_sweep_pixel_delay_37_pixel_b;
+    rt_cam_sweep_pixel_delay_39_vsync <= rt_cam_sweep_pixel_delay_38_vsync;
+    rt_cam_sweep_pixel_delay_39_req <= rt_cam_sweep_pixel_delay_38_req;
+    rt_cam_sweep_pixel_delay_39_eol <= rt_cam_sweep_pixel_delay_38_eol;
+    rt_cam_sweep_pixel_delay_39_eof <= rt_cam_sweep_pixel_delay_38_eof;
+    rt_cam_sweep_pixel_delay_39_pixel_r <= rt_cam_sweep_pixel_delay_38_pixel_r;
+    rt_cam_sweep_pixel_delay_39_pixel_g <= rt_cam_sweep_pixel_delay_38_pixel_g;
+    rt_cam_sweep_pixel_delay_39_pixel_b <= rt_cam_sweep_pixel_delay_38_pixel_b;
+    rt_cam_sweep_pixel_delay_40_vsync <= rt_cam_sweep_pixel_delay_39_vsync;
+    rt_cam_sweep_pixel_delay_40_req <= rt_cam_sweep_pixel_delay_39_req;
+    rt_cam_sweep_pixel_delay_40_eol <= rt_cam_sweep_pixel_delay_39_eol;
+    rt_cam_sweep_pixel_delay_40_eof <= rt_cam_sweep_pixel_delay_39_eof;
+    rt_cam_sweep_pixel_delay_40_pixel_r <= rt_cam_sweep_pixel_delay_39_pixel_r;
+    rt_cam_sweep_pixel_delay_40_pixel_g <= rt_cam_sweep_pixel_delay_39_pixel_g;
+    rt_cam_sweep_pixel_delay_40_pixel_b <= rt_cam_sweep_pixel_delay_39_pixel_b;
+    rt_cam_sweep_pixel_delay_41_vsync <= rt_cam_sweep_pixel_delay_40_vsync;
+    rt_cam_sweep_pixel_delay_41_req <= rt_cam_sweep_pixel_delay_40_req;
+    rt_cam_sweep_pixel_delay_41_eol <= rt_cam_sweep_pixel_delay_40_eol;
+    rt_cam_sweep_pixel_delay_41_eof <= rt_cam_sweep_pixel_delay_40_eof;
+    rt_cam_sweep_pixel_delay_41_pixel_r <= rt_cam_sweep_pixel_delay_40_pixel_r;
+    rt_cam_sweep_pixel_delay_41_pixel_g <= rt_cam_sweep_pixel_delay_40_pixel_g;
+    rt_cam_sweep_pixel_delay_41_pixel_b <= rt_cam_sweep_pixel_delay_40_pixel_b;
+    rt_cam_sweep_pixel_delay_42_vsync <= rt_cam_sweep_pixel_delay_41_vsync;
+    rt_cam_sweep_pixel_delay_42_req <= rt_cam_sweep_pixel_delay_41_req;
+    rt_cam_sweep_pixel_delay_42_eol <= rt_cam_sweep_pixel_delay_41_eol;
+    rt_cam_sweep_pixel_delay_42_eof <= rt_cam_sweep_pixel_delay_41_eof;
+    rt_cam_sweep_pixel_delay_42_pixel_r <= rt_cam_sweep_pixel_delay_41_pixel_r;
+    rt_cam_sweep_pixel_delay_42_pixel_g <= rt_cam_sweep_pixel_delay_41_pixel_g;
+    rt_cam_sweep_pixel_delay_42_pixel_b <= rt_cam_sweep_pixel_delay_41_pixel_b;
+    rt_cam_sweep_pixel_delay_43_vsync <= rt_cam_sweep_pixel_delay_42_vsync;
+    rt_cam_sweep_pixel_delay_43_req <= rt_cam_sweep_pixel_delay_42_req;
+    rt_cam_sweep_pixel_delay_43_eol <= rt_cam_sweep_pixel_delay_42_eol;
+    rt_cam_sweep_pixel_delay_43_eof <= rt_cam_sweep_pixel_delay_42_eof;
+    rt_cam_sweep_pixel_delay_43_pixel_r <= rt_cam_sweep_pixel_delay_42_pixel_r;
+    rt_cam_sweep_pixel_delay_43_pixel_g <= rt_cam_sweep_pixel_delay_42_pixel_g;
+    rt_cam_sweep_pixel_delay_43_pixel_b <= rt_cam_sweep_pixel_delay_42_pixel_b;
+    rt_cam_sweep_pixel_delay_44_vsync <= rt_cam_sweep_pixel_delay_43_vsync;
+    rt_cam_sweep_pixel_delay_44_req <= rt_cam_sweep_pixel_delay_43_req;
+    rt_cam_sweep_pixel_delay_44_eol <= rt_cam_sweep_pixel_delay_43_eol;
+    rt_cam_sweep_pixel_delay_44_eof <= rt_cam_sweep_pixel_delay_43_eof;
+    rt_cam_sweep_pixel_delay_44_pixel_r <= rt_cam_sweep_pixel_delay_43_pixel_r;
+    rt_cam_sweep_pixel_delay_44_pixel_g <= rt_cam_sweep_pixel_delay_43_pixel_g;
+    rt_cam_sweep_pixel_delay_44_pixel_b <= rt_cam_sweep_pixel_delay_43_pixel_b;
+    rt_cam_sweep_pixel_delay_45_vsync <= rt_cam_sweep_pixel_delay_44_vsync;
+    rt_cam_sweep_pixel_delay_45_req <= rt_cam_sweep_pixel_delay_44_req;
+    rt_cam_sweep_pixel_delay_45_eol <= rt_cam_sweep_pixel_delay_44_eol;
+    rt_cam_sweep_pixel_delay_45_eof <= rt_cam_sweep_pixel_delay_44_eof;
+    rt_cam_sweep_pixel_delay_45_pixel_r <= rt_cam_sweep_pixel_delay_44_pixel_r;
+    rt_cam_sweep_pixel_delay_45_pixel_g <= rt_cam_sweep_pixel_delay_44_pixel_g;
+    rt_cam_sweep_pixel_delay_45_pixel_b <= rt_cam_sweep_pixel_delay_44_pixel_b;
+    rt_cam_sweep_pixel_delay_46_vsync <= rt_cam_sweep_pixel_delay_45_vsync;
+    rt_cam_sweep_pixel_delay_46_req <= rt_cam_sweep_pixel_delay_45_req;
+    rt_cam_sweep_pixel_delay_46_eol <= rt_cam_sweep_pixel_delay_45_eol;
+    rt_cam_sweep_pixel_delay_46_eof <= rt_cam_sweep_pixel_delay_45_eof;
+    rt_cam_sweep_pixel_delay_46_pixel_r <= rt_cam_sweep_pixel_delay_45_pixel_r;
+    rt_cam_sweep_pixel_delay_46_pixel_g <= rt_cam_sweep_pixel_delay_45_pixel_g;
+    rt_cam_sweep_pixel_delay_46_pixel_b <= rt_cam_sweep_pixel_delay_45_pixel_b;
+    rt_cam_sweep_pixel_delay_47_vsync <= rt_cam_sweep_pixel_delay_46_vsync;
+    rt_cam_sweep_pixel_delay_47_req <= rt_cam_sweep_pixel_delay_46_req;
+    rt_cam_sweep_pixel_delay_47_eol <= rt_cam_sweep_pixel_delay_46_eol;
+    rt_cam_sweep_pixel_delay_47_eof <= rt_cam_sweep_pixel_delay_46_eof;
+    rt_cam_sweep_pixel_delay_47_pixel_r <= rt_cam_sweep_pixel_delay_46_pixel_r;
+    rt_cam_sweep_pixel_delay_47_pixel_g <= rt_cam_sweep_pixel_delay_46_pixel_g;
+    rt_cam_sweep_pixel_delay_47_pixel_b <= rt_cam_sweep_pixel_delay_46_pixel_b;
+    rt_cam_sweep_pixel_delay_48_vsync <= rt_cam_sweep_pixel_delay_47_vsync;
+    rt_cam_sweep_pixel_delay_48_req <= rt_cam_sweep_pixel_delay_47_req;
+    rt_cam_sweep_pixel_delay_48_eol <= rt_cam_sweep_pixel_delay_47_eol;
+    rt_cam_sweep_pixel_delay_48_eof <= rt_cam_sweep_pixel_delay_47_eof;
+    rt_cam_sweep_pixel_delay_48_pixel_r <= rt_cam_sweep_pixel_delay_47_pixel_r;
+    rt_cam_sweep_pixel_delay_48_pixel_g <= rt_cam_sweep_pixel_delay_47_pixel_g;
+    rt_cam_sweep_pixel_delay_48_pixel_b <= rt_cam_sweep_pixel_delay_47_pixel_b;
+    rt_cam_sweep_pixel_delay_49_vsync <= rt_cam_sweep_pixel_delay_48_vsync;
+    rt_cam_sweep_pixel_delay_49_req <= rt_cam_sweep_pixel_delay_48_req;
+    rt_cam_sweep_pixel_delay_49_eol <= rt_cam_sweep_pixel_delay_48_eol;
+    rt_cam_sweep_pixel_delay_49_eof <= rt_cam_sweep_pixel_delay_48_eof;
+    rt_cam_sweep_pixel_delay_49_pixel_r <= rt_cam_sweep_pixel_delay_48_pixel_r;
+    rt_cam_sweep_pixel_delay_49_pixel_g <= rt_cam_sweep_pixel_delay_48_pixel_g;
+    rt_cam_sweep_pixel_delay_49_pixel_b <= rt_cam_sweep_pixel_delay_48_pixel_b;
+    rt_cam_sweep_pixel_delay_50_vsync <= rt_cam_sweep_pixel_delay_49_vsync;
+    rt_cam_sweep_pixel_delay_50_req <= rt_cam_sweep_pixel_delay_49_req;
+    rt_cam_sweep_pixel_delay_50_eol <= rt_cam_sweep_pixel_delay_49_eol;
+    rt_cam_sweep_pixel_delay_50_eof <= rt_cam_sweep_pixel_delay_49_eof;
+    rt_cam_sweep_pixel_delay_50_pixel_r <= rt_cam_sweep_pixel_delay_49_pixel_r;
+    rt_cam_sweep_pixel_delay_50_pixel_g <= rt_cam_sweep_pixel_delay_49_pixel_g;
+    rt_cam_sweep_pixel_delay_50_pixel_b <= rt_cam_sweep_pixel_delay_49_pixel_b;
+    rt_cam_sweep_pixel_delay_51_vsync <= rt_cam_sweep_pixel_delay_50_vsync;
+    rt_cam_sweep_pixel_delay_51_req <= rt_cam_sweep_pixel_delay_50_req;
+    rt_cam_sweep_pixel_delay_51_eol <= rt_cam_sweep_pixel_delay_50_eol;
+    rt_cam_sweep_pixel_delay_51_eof <= rt_cam_sweep_pixel_delay_50_eof;
+    rt_cam_sweep_pixel_delay_51_pixel_r <= rt_cam_sweep_pixel_delay_50_pixel_r;
+    rt_cam_sweep_pixel_delay_51_pixel_g <= rt_cam_sweep_pixel_delay_50_pixel_g;
+    rt_cam_sweep_pixel_delay_51_pixel_b <= rt_cam_sweep_pixel_delay_50_pixel_b;
+    rt_cam_sweep_pixel_delay_52_vsync <= rt_cam_sweep_pixel_delay_51_vsync;
+    rt_cam_sweep_pixel_delay_52_req <= rt_cam_sweep_pixel_delay_51_req;
+    rt_cam_sweep_pixel_delay_52_eol <= rt_cam_sweep_pixel_delay_51_eol;
+    rt_cam_sweep_pixel_delay_52_eof <= rt_cam_sweep_pixel_delay_51_eof;
+    rt_cam_sweep_pixel_delay_52_pixel_r <= rt_cam_sweep_pixel_delay_51_pixel_r;
+    rt_cam_sweep_pixel_delay_52_pixel_g <= rt_cam_sweep_pixel_delay_51_pixel_g;
+    rt_cam_sweep_pixel_delay_52_pixel_b <= rt_cam_sweep_pixel_delay_51_pixel_b;
+    rt_cam_sweep_pixel_delay_53_vsync <= rt_cam_sweep_pixel_delay_52_vsync;
+    rt_cam_sweep_pixel_delay_53_req <= rt_cam_sweep_pixel_delay_52_req;
+    rt_cam_sweep_pixel_delay_53_eol <= rt_cam_sweep_pixel_delay_52_eol;
+    rt_cam_sweep_pixel_delay_53_eof <= rt_cam_sweep_pixel_delay_52_eof;
+    rt_cam_sweep_pixel_delay_53_pixel_r <= rt_cam_sweep_pixel_delay_52_pixel_r;
+    rt_cam_sweep_pixel_delay_53_pixel_g <= rt_cam_sweep_pixel_delay_52_pixel_g;
+    rt_cam_sweep_pixel_delay_53_pixel_b <= rt_cam_sweep_pixel_delay_52_pixel_b;
+    rt_cam_sweep_pixel_delay_54_vsync <= rt_cam_sweep_pixel_delay_53_vsync;
+    rt_cam_sweep_pixel_delay_54_req <= rt_cam_sweep_pixel_delay_53_req;
+    rt_cam_sweep_pixel_delay_54_eol <= rt_cam_sweep_pixel_delay_53_eol;
+    rt_cam_sweep_pixel_delay_54_eof <= rt_cam_sweep_pixel_delay_53_eof;
+    rt_cam_sweep_pixel_delay_54_pixel_r <= rt_cam_sweep_pixel_delay_53_pixel_r;
+    rt_cam_sweep_pixel_delay_54_pixel_g <= rt_cam_sweep_pixel_delay_53_pixel_g;
+    rt_cam_sweep_pixel_delay_54_pixel_b <= rt_cam_sweep_pixel_delay_53_pixel_b;
+    rt_cam_sweep_pixel_delay_55_vsync <= rt_cam_sweep_pixel_delay_54_vsync;
+    rt_cam_sweep_pixel_delay_55_req <= rt_cam_sweep_pixel_delay_54_req;
+    rt_cam_sweep_pixel_delay_55_eol <= rt_cam_sweep_pixel_delay_54_eol;
+    rt_cam_sweep_pixel_delay_55_eof <= rt_cam_sweep_pixel_delay_54_eof;
+    rt_cam_sweep_pixel_delay_55_pixel_r <= rt_cam_sweep_pixel_delay_54_pixel_r;
+    rt_cam_sweep_pixel_delay_55_pixel_g <= rt_cam_sweep_pixel_delay_54_pixel_g;
+    rt_cam_sweep_pixel_delay_55_pixel_b <= rt_cam_sweep_pixel_delay_54_pixel_b;
+    rt_cam_sweep_pixel_delay_56_vsync <= rt_cam_sweep_pixel_delay_55_vsync;
+    rt_cam_sweep_pixel_delay_56_req <= rt_cam_sweep_pixel_delay_55_req;
+    rt_cam_sweep_pixel_delay_56_eol <= rt_cam_sweep_pixel_delay_55_eol;
+    rt_cam_sweep_pixel_delay_56_eof <= rt_cam_sweep_pixel_delay_55_eof;
+    rt_cam_sweep_pixel_delay_56_pixel_r <= rt_cam_sweep_pixel_delay_55_pixel_r;
+    rt_cam_sweep_pixel_delay_56_pixel_g <= rt_cam_sweep_pixel_delay_55_pixel_g;
+    rt_cam_sweep_pixel_delay_56_pixel_b <= rt_cam_sweep_pixel_delay_55_pixel_b;
+    rt_cam_sweep_pixel_delay_57_vsync <= rt_cam_sweep_pixel_delay_56_vsync;
+    rt_cam_sweep_pixel_delay_57_req <= rt_cam_sweep_pixel_delay_56_req;
+    rt_cam_sweep_pixel_delay_57_eol <= rt_cam_sweep_pixel_delay_56_eol;
+    rt_cam_sweep_pixel_delay_57_eof <= rt_cam_sweep_pixel_delay_56_eof;
+    rt_cam_sweep_pixel_delay_57_pixel_r <= rt_cam_sweep_pixel_delay_56_pixel_r;
+    rt_cam_sweep_pixel_delay_57_pixel_g <= rt_cam_sweep_pixel_delay_56_pixel_g;
+    rt_cam_sweep_pixel_delay_57_pixel_b <= rt_cam_sweep_pixel_delay_56_pixel_b;
+    rt_cam_sweep_pixel_delay_58_vsync <= rt_cam_sweep_pixel_delay_57_vsync;
+    rt_cam_sweep_pixel_delay_58_req <= rt_cam_sweep_pixel_delay_57_req;
+    rt_cam_sweep_pixel_delay_58_eol <= rt_cam_sweep_pixel_delay_57_eol;
+    rt_cam_sweep_pixel_delay_58_eof <= rt_cam_sweep_pixel_delay_57_eof;
+    rt_cam_sweep_pixel_delay_58_pixel_r <= rt_cam_sweep_pixel_delay_57_pixel_r;
+    rt_cam_sweep_pixel_delay_58_pixel_g <= rt_cam_sweep_pixel_delay_57_pixel_g;
+    rt_cam_sweep_pixel_delay_58_pixel_b <= rt_cam_sweep_pixel_delay_57_pixel_b;
+    rt_cam_sweep_pixel_delay_59_vsync <= rt_cam_sweep_pixel_delay_58_vsync;
+    rt_cam_sweep_pixel_delay_59_req <= rt_cam_sweep_pixel_delay_58_req;
+    rt_cam_sweep_pixel_delay_59_eol <= rt_cam_sweep_pixel_delay_58_eol;
+    rt_cam_sweep_pixel_delay_59_eof <= rt_cam_sweep_pixel_delay_58_eof;
+    rt_cam_sweep_pixel_delay_59_pixel_r <= rt_cam_sweep_pixel_delay_58_pixel_r;
+    rt_cam_sweep_pixel_delay_59_pixel_g <= rt_cam_sweep_pixel_delay_58_pixel_g;
+    rt_cam_sweep_pixel_delay_59_pixel_b <= rt_cam_sweep_pixel_delay_58_pixel_b;
+    rt_cam_sweep_pixel_delay_60_vsync <= rt_cam_sweep_pixel_delay_59_vsync;
+    rt_cam_sweep_pixel_delay_60_req <= rt_cam_sweep_pixel_delay_59_req;
+    rt_cam_sweep_pixel_delay_60_eol <= rt_cam_sweep_pixel_delay_59_eol;
+    rt_cam_sweep_pixel_delay_60_eof <= rt_cam_sweep_pixel_delay_59_eof;
+    rt_cam_sweep_pixel_delay_60_pixel_r <= rt_cam_sweep_pixel_delay_59_pixel_r;
+    rt_cam_sweep_pixel_delay_60_pixel_g <= rt_cam_sweep_pixel_delay_59_pixel_g;
+    rt_cam_sweep_pixel_delay_60_pixel_b <= rt_cam_sweep_pixel_delay_59_pixel_b;
+    rt_cam_sweep_pixel_delay_61_vsync <= rt_cam_sweep_pixel_delay_60_vsync;
+    rt_cam_sweep_pixel_delay_61_req <= rt_cam_sweep_pixel_delay_60_req;
+    rt_cam_sweep_pixel_delay_61_eol <= rt_cam_sweep_pixel_delay_60_eol;
+    rt_cam_sweep_pixel_delay_61_eof <= rt_cam_sweep_pixel_delay_60_eof;
+    rt_cam_sweep_pixel_delay_61_pixel_r <= rt_cam_sweep_pixel_delay_60_pixel_r;
+    rt_cam_sweep_pixel_delay_61_pixel_g <= rt_cam_sweep_pixel_delay_60_pixel_g;
+    rt_cam_sweep_pixel_delay_61_pixel_b <= rt_cam_sweep_pixel_delay_60_pixel_b;
+    rt_cam_sweep_pixel_delay_62_vsync <= rt_cam_sweep_pixel_delay_61_vsync;
+    rt_cam_sweep_pixel_delay_62_req <= rt_cam_sweep_pixel_delay_61_req;
+    rt_cam_sweep_pixel_delay_62_eol <= rt_cam_sweep_pixel_delay_61_eol;
+    rt_cam_sweep_pixel_delay_62_eof <= rt_cam_sweep_pixel_delay_61_eof;
+    rt_cam_sweep_pixel_delay_62_pixel_r <= rt_cam_sweep_pixel_delay_61_pixel_r;
+    rt_cam_sweep_pixel_delay_62_pixel_g <= rt_cam_sweep_pixel_delay_61_pixel_g;
+    rt_cam_sweep_pixel_delay_62_pixel_b <= rt_cam_sweep_pixel_delay_61_pixel_b;
+    rt_cam_sweep_pixel_delay_63_vsync <= rt_cam_sweep_pixel_delay_62_vsync;
+    rt_cam_sweep_pixel_delay_63_req <= rt_cam_sweep_pixel_delay_62_req;
+    rt_cam_sweep_pixel_delay_63_eol <= rt_cam_sweep_pixel_delay_62_eol;
+    rt_cam_sweep_pixel_delay_63_eof <= rt_cam_sweep_pixel_delay_62_eof;
+    rt_cam_sweep_pixel_delay_63_pixel_r <= rt_cam_sweep_pixel_delay_62_pixel_r;
+    rt_cam_sweep_pixel_delay_63_pixel_g <= rt_cam_sweep_pixel_delay_62_pixel_g;
+    rt_cam_sweep_pixel_delay_63_pixel_b <= rt_cam_sweep_pixel_delay_62_pixel_b;
+    rt_cam_sweep_pixel_delay_64_vsync <= rt_cam_sweep_pixel_delay_63_vsync;
+    rt_cam_sweep_pixel_delay_64_req <= rt_cam_sweep_pixel_delay_63_req;
+    rt_cam_sweep_pixel_delay_64_eol <= rt_cam_sweep_pixel_delay_63_eol;
+    rt_cam_sweep_pixel_delay_64_eof <= rt_cam_sweep_pixel_delay_63_eof;
+    rt_cam_sweep_pixel_delay_64_pixel_r <= rt_cam_sweep_pixel_delay_63_pixel_r;
+    rt_cam_sweep_pixel_delay_64_pixel_g <= rt_cam_sweep_pixel_delay_63_pixel_g;
+    rt_cam_sweep_pixel_delay_64_pixel_b <= rt_cam_sweep_pixel_delay_63_pixel_b;
+    rt_cam_sweep_pixel_delay_65_vsync <= rt_cam_sweep_pixel_delay_64_vsync;
+    rt_cam_sweep_pixel_delay_65_req <= rt_cam_sweep_pixel_delay_64_req;
+    rt_cam_sweep_pixel_delay_65_eol <= rt_cam_sweep_pixel_delay_64_eol;
+    rt_cam_sweep_pixel_delay_65_eof <= rt_cam_sweep_pixel_delay_64_eof;
+    rt_cam_sweep_pixel_delay_65_pixel_r <= rt_cam_sweep_pixel_delay_64_pixel_r;
+    rt_cam_sweep_pixel_delay_65_pixel_g <= rt_cam_sweep_pixel_delay_64_pixel_g;
+    rt_cam_sweep_pixel_delay_65_pixel_b <= rt_cam_sweep_pixel_delay_64_pixel_b;
+    rt_cam_sweep_pixel_delay_66_vsync <= rt_cam_sweep_pixel_delay_65_vsync;
+    rt_cam_sweep_pixel_delay_66_req <= rt_cam_sweep_pixel_delay_65_req;
+    rt_cam_sweep_pixel_delay_66_eol <= rt_cam_sweep_pixel_delay_65_eol;
+    rt_cam_sweep_pixel_delay_66_eof <= rt_cam_sweep_pixel_delay_65_eof;
+    rt_cam_sweep_pixel_delay_66_pixel_r <= rt_cam_sweep_pixel_delay_65_pixel_r;
+    rt_cam_sweep_pixel_delay_66_pixel_g <= rt_cam_sweep_pixel_delay_65_pixel_g;
+    rt_cam_sweep_pixel_delay_66_pixel_b <= rt_cam_sweep_pixel_delay_65_pixel_b;
+    rt_cam_sweep_pixel_delay_67_vsync <= rt_cam_sweep_pixel_delay_66_vsync;
+    rt_cam_sweep_pixel_delay_67_req <= rt_cam_sweep_pixel_delay_66_req;
+    rt_cam_sweep_pixel_delay_67_eol <= rt_cam_sweep_pixel_delay_66_eol;
+    rt_cam_sweep_pixel_delay_67_eof <= rt_cam_sweep_pixel_delay_66_eof;
+    rt_cam_sweep_pixel_delay_67_pixel_r <= rt_cam_sweep_pixel_delay_66_pixel_r;
+    rt_cam_sweep_pixel_delay_67_pixel_g <= rt_cam_sweep_pixel_delay_66_pixel_g;
+    rt_cam_sweep_pixel_delay_67_pixel_b <= rt_cam_sweep_pixel_delay_66_pixel_b;
+    rt_cam_sweep_pixel_delay_68_vsync <= rt_cam_sweep_pixel_delay_67_vsync;
+    rt_cam_sweep_pixel_delay_68_req <= rt_cam_sweep_pixel_delay_67_req;
+    rt_cam_sweep_pixel_delay_68_eol <= rt_cam_sweep_pixel_delay_67_eol;
+    rt_cam_sweep_pixel_delay_68_eof <= rt_cam_sweep_pixel_delay_67_eof;
+    rt_cam_sweep_pixel_delay_68_pixel_r <= rt_cam_sweep_pixel_delay_67_pixel_r;
+    rt_cam_sweep_pixel_delay_68_pixel_g <= rt_cam_sweep_pixel_delay_67_pixel_g;
+    rt_cam_sweep_pixel_delay_68_pixel_b <= rt_cam_sweep_pixel_delay_67_pixel_b;
+    rt_cam_sweep_pixel_delay_69_vsync <= rt_cam_sweep_pixel_delay_68_vsync;
+    rt_cam_sweep_pixel_delay_69_req <= rt_cam_sweep_pixel_delay_68_req;
+    rt_cam_sweep_pixel_delay_69_eol <= rt_cam_sweep_pixel_delay_68_eol;
+    rt_cam_sweep_pixel_delay_69_eof <= rt_cam_sweep_pixel_delay_68_eof;
+    rt_cam_sweep_pixel_delay_69_pixel_r <= rt_cam_sweep_pixel_delay_68_pixel_r;
+    rt_cam_sweep_pixel_delay_69_pixel_g <= rt_cam_sweep_pixel_delay_68_pixel_g;
+    rt_cam_sweep_pixel_delay_69_pixel_b <= rt_cam_sweep_pixel_delay_68_pixel_b;
+    rt_cam_sweep_pixel_delay_70_vsync <= rt_cam_sweep_pixel_delay_69_vsync;
+    rt_cam_sweep_pixel_delay_70_req <= rt_cam_sweep_pixel_delay_69_req;
+    rt_cam_sweep_pixel_delay_70_eol <= rt_cam_sweep_pixel_delay_69_eol;
+    rt_cam_sweep_pixel_delay_70_eof <= rt_cam_sweep_pixel_delay_69_eof;
+    rt_cam_sweep_pixel_delay_70_pixel_r <= rt_cam_sweep_pixel_delay_69_pixel_r;
+    rt_cam_sweep_pixel_delay_70_pixel_g <= rt_cam_sweep_pixel_delay_69_pixel_g;
+    rt_cam_sweep_pixel_delay_70_pixel_b <= rt_cam_sweep_pixel_delay_69_pixel_b;
+    rt_cam_sweep_pixel_delay_71_vsync <= rt_cam_sweep_pixel_delay_70_vsync;
+    rt_cam_sweep_pixel_delay_71_req <= rt_cam_sweep_pixel_delay_70_req;
+    rt_cam_sweep_pixel_delay_71_eol <= rt_cam_sweep_pixel_delay_70_eol;
+    rt_cam_sweep_pixel_delay_71_eof <= rt_cam_sweep_pixel_delay_70_eof;
+    rt_cam_sweep_pixel_delay_71_pixel_r <= rt_cam_sweep_pixel_delay_70_pixel_r;
+    rt_cam_sweep_pixel_delay_71_pixel_g <= rt_cam_sweep_pixel_delay_70_pixel_g;
+    rt_cam_sweep_pixel_delay_71_pixel_b <= rt_cam_sweep_pixel_delay_70_pixel_b;
+    rt_cam_sweep_pixel_delay_72_vsync <= rt_cam_sweep_pixel_delay_71_vsync;
+    rt_cam_sweep_pixel_delay_72_req <= rt_cam_sweep_pixel_delay_71_req;
+    rt_cam_sweep_pixel_delay_72_eol <= rt_cam_sweep_pixel_delay_71_eol;
+    rt_cam_sweep_pixel_delay_72_eof <= rt_cam_sweep_pixel_delay_71_eof;
+    rt_cam_sweep_pixel_delay_72_pixel_r <= rt_cam_sweep_pixel_delay_71_pixel_r;
+    rt_cam_sweep_pixel_delay_72_pixel_g <= rt_cam_sweep_pixel_delay_71_pixel_g;
+    rt_cam_sweep_pixel_delay_72_pixel_b <= rt_cam_sweep_pixel_delay_71_pixel_b;
+    rt_cam_sweep_pixel_delay_73_vsync <= rt_cam_sweep_pixel_delay_72_vsync;
+    rt_cam_sweep_pixel_delay_73_req <= rt_cam_sweep_pixel_delay_72_req;
+    rt_cam_sweep_pixel_delay_73_eol <= rt_cam_sweep_pixel_delay_72_eol;
+    rt_cam_sweep_pixel_delay_73_eof <= rt_cam_sweep_pixel_delay_72_eof;
+    rt_cam_sweep_pixel_delay_73_pixel_r <= rt_cam_sweep_pixel_delay_72_pixel_r;
+    rt_cam_sweep_pixel_delay_73_pixel_g <= rt_cam_sweep_pixel_delay_72_pixel_g;
+    rt_cam_sweep_pixel_delay_73_pixel_b <= rt_cam_sweep_pixel_delay_72_pixel_b;
+    rt_cam_sweep_pixel_delay_74_vsync <= rt_cam_sweep_pixel_delay_73_vsync;
+    rt_cam_sweep_pixel_delay_74_req <= rt_cam_sweep_pixel_delay_73_req;
+    rt_cam_sweep_pixel_delay_74_eol <= rt_cam_sweep_pixel_delay_73_eol;
+    rt_cam_sweep_pixel_delay_74_eof <= rt_cam_sweep_pixel_delay_73_eof;
+    rt_cam_sweep_pixel_delay_74_pixel_r <= rt_cam_sweep_pixel_delay_73_pixel_r;
+    rt_cam_sweep_pixel_delay_74_pixel_g <= rt_cam_sweep_pixel_delay_73_pixel_g;
+    rt_cam_sweep_pixel_delay_74_pixel_b <= rt_cam_sweep_pixel_delay_73_pixel_b;
+    rt_cam_sweep_pixel_delay_75_vsync <= rt_cam_sweep_pixel_delay_74_vsync;
+    rt_cam_sweep_pixel_delay_75_req <= rt_cam_sweep_pixel_delay_74_req;
+    rt_cam_sweep_pixel_delay_75_eol <= rt_cam_sweep_pixel_delay_74_eol;
+    rt_cam_sweep_pixel_delay_75_eof <= rt_cam_sweep_pixel_delay_74_eof;
+    rt_cam_sweep_pixel_delay_75_pixel_r <= rt_cam_sweep_pixel_delay_74_pixel_r;
+    rt_cam_sweep_pixel_delay_75_pixel_g <= rt_cam_sweep_pixel_delay_74_pixel_g;
+    rt_cam_sweep_pixel_delay_75_pixel_b <= rt_cam_sweep_pixel_delay_74_pixel_b;
+    rt_cam_sweep_pixel_delay_76_vsync <= rt_cam_sweep_pixel_delay_75_vsync;
+    rt_cam_sweep_pixel_delay_76_req <= rt_cam_sweep_pixel_delay_75_req;
+    rt_cam_sweep_pixel_delay_76_eol <= rt_cam_sweep_pixel_delay_75_eol;
+    rt_cam_sweep_pixel_delay_76_eof <= rt_cam_sweep_pixel_delay_75_eof;
+    rt_cam_sweep_pixel_delay_76_pixel_r <= rt_cam_sweep_pixel_delay_75_pixel_r;
+    rt_cam_sweep_pixel_delay_76_pixel_g <= rt_cam_sweep_pixel_delay_75_pixel_g;
+    rt_cam_sweep_pixel_delay_76_pixel_b <= rt_cam_sweep_pixel_delay_75_pixel_b;
+    rt_cam_sweep_pixel_delay_77_vsync <= rt_cam_sweep_pixel_delay_76_vsync;
+    rt_cam_sweep_pixel_delay_77_req <= rt_cam_sweep_pixel_delay_76_req;
+    rt_cam_sweep_pixel_delay_77_eol <= rt_cam_sweep_pixel_delay_76_eol;
+    rt_cam_sweep_pixel_delay_77_eof <= rt_cam_sweep_pixel_delay_76_eof;
+    rt_cam_sweep_pixel_delay_77_pixel_r <= rt_cam_sweep_pixel_delay_76_pixel_r;
+    rt_cam_sweep_pixel_delay_77_pixel_g <= rt_cam_sweep_pixel_delay_76_pixel_g;
+    rt_cam_sweep_pixel_delay_77_pixel_b <= rt_cam_sweep_pixel_delay_76_pixel_b;
+    rt_cam_sweep_pixel_delay_78_vsync <= rt_cam_sweep_pixel_delay_77_vsync;
+    rt_cam_sweep_pixel_delay_78_req <= rt_cam_sweep_pixel_delay_77_req;
+    rt_cam_sweep_pixel_delay_78_eol <= rt_cam_sweep_pixel_delay_77_eol;
+    rt_cam_sweep_pixel_delay_78_eof <= rt_cam_sweep_pixel_delay_77_eof;
+    rt_cam_sweep_pixel_delay_78_pixel_r <= rt_cam_sweep_pixel_delay_77_pixel_r;
+    rt_cam_sweep_pixel_delay_78_pixel_g <= rt_cam_sweep_pixel_delay_77_pixel_g;
+    rt_cam_sweep_pixel_delay_78_pixel_b <= rt_cam_sweep_pixel_delay_77_pixel_b;
+    rt_cam_sweep_pixel_delay_79_vsync <= rt_cam_sweep_pixel_delay_78_vsync;
+    rt_cam_sweep_pixel_delay_79_req <= rt_cam_sweep_pixel_delay_78_req;
+    rt_cam_sweep_pixel_delay_79_eol <= rt_cam_sweep_pixel_delay_78_eol;
+    rt_cam_sweep_pixel_delay_79_eof <= rt_cam_sweep_pixel_delay_78_eof;
+    rt_cam_sweep_pixel_delay_79_pixel_r <= rt_cam_sweep_pixel_delay_78_pixel_r;
+    rt_cam_sweep_pixel_delay_79_pixel_g <= rt_cam_sweep_pixel_delay_78_pixel_g;
+    rt_cam_sweep_pixel_delay_79_pixel_b <= rt_cam_sweep_pixel_delay_78_pixel_b;
+    rt_cam_sweep_pixel_delay_80_vsync <= rt_cam_sweep_pixel_delay_79_vsync;
+    rt_cam_sweep_pixel_delay_80_req <= rt_cam_sweep_pixel_delay_79_req;
+    rt_cam_sweep_pixel_delay_80_eol <= rt_cam_sweep_pixel_delay_79_eol;
+    rt_cam_sweep_pixel_delay_80_eof <= rt_cam_sweep_pixel_delay_79_eof;
+    rt_cam_sweep_pixel_delay_80_pixel_r <= rt_cam_sweep_pixel_delay_79_pixel_r;
+    rt_cam_sweep_pixel_delay_80_pixel_g <= rt_cam_sweep_pixel_delay_79_pixel_g;
+    rt_cam_sweep_pixel_delay_80_pixel_b <= rt_cam_sweep_pixel_delay_79_pixel_b;
+    rt_cam_sweep_pixel_delay_81_vsync <= rt_cam_sweep_pixel_delay_80_vsync;
+    rt_cam_sweep_pixel_delay_81_req <= rt_cam_sweep_pixel_delay_80_req;
+    rt_cam_sweep_pixel_delay_81_eol <= rt_cam_sweep_pixel_delay_80_eol;
+    rt_cam_sweep_pixel_delay_81_eof <= rt_cam_sweep_pixel_delay_80_eof;
+    rt_cam_sweep_pixel_delay_81_pixel_r <= rt_cam_sweep_pixel_delay_80_pixel_r;
+    rt_cam_sweep_pixel_delay_81_pixel_g <= rt_cam_sweep_pixel_delay_80_pixel_g;
+    rt_cam_sweep_pixel_delay_81_pixel_b <= rt_cam_sweep_pixel_delay_80_pixel_b;
+    rt_cam_sweep_pixel_delay_82_vsync <= rt_cam_sweep_pixel_delay_81_vsync;
+    rt_cam_sweep_pixel_delay_82_req <= rt_cam_sweep_pixel_delay_81_req;
+    rt_cam_sweep_pixel_delay_82_eol <= rt_cam_sweep_pixel_delay_81_eol;
+    rt_cam_sweep_pixel_delay_82_eof <= rt_cam_sweep_pixel_delay_81_eof;
+    rt_cam_sweep_pixel_delay_82_pixel_r <= rt_cam_sweep_pixel_delay_81_pixel_r;
+    rt_cam_sweep_pixel_delay_82_pixel_g <= rt_cam_sweep_pixel_delay_81_pixel_g;
+    rt_cam_sweep_pixel_delay_82_pixel_b <= rt_cam_sweep_pixel_delay_81_pixel_b;
+    rt_cam_sweep_pixel_delay_83_vsync <= rt_cam_sweep_pixel_delay_82_vsync;
+    rt_cam_sweep_pixel_delay_83_req <= rt_cam_sweep_pixel_delay_82_req;
+    rt_cam_sweep_pixel_delay_83_eol <= rt_cam_sweep_pixel_delay_82_eol;
+    rt_cam_sweep_pixel_delay_83_eof <= rt_cam_sweep_pixel_delay_82_eof;
+    rt_cam_sweep_pixel_delay_83_pixel_r <= rt_cam_sweep_pixel_delay_82_pixel_r;
+    rt_cam_sweep_pixel_delay_83_pixel_g <= rt_cam_sweep_pixel_delay_82_pixel_g;
+    rt_cam_sweep_pixel_delay_83_pixel_b <= rt_cam_sweep_pixel_delay_82_pixel_b;
+    rt_cam_sweep_pixel_delay_84_vsync <= rt_cam_sweep_pixel_delay_83_vsync;
+    rt_cam_sweep_pixel_delay_84_req <= rt_cam_sweep_pixel_delay_83_req;
+    rt_cam_sweep_pixel_delay_84_eol <= rt_cam_sweep_pixel_delay_83_eol;
+    rt_cam_sweep_pixel_delay_84_eof <= rt_cam_sweep_pixel_delay_83_eof;
+    rt_cam_sweep_pixel_delay_84_pixel_r <= rt_cam_sweep_pixel_delay_83_pixel_r;
+    rt_cam_sweep_pixel_delay_84_pixel_g <= rt_cam_sweep_pixel_delay_83_pixel_g;
+    rt_cam_sweep_pixel_delay_84_pixel_b <= rt_cam_sweep_pixel_delay_83_pixel_b;
+    rt_cam_sweep_pixel_delay_85_vsync <= rt_cam_sweep_pixel_delay_84_vsync;
+    rt_cam_sweep_pixel_delay_85_req <= rt_cam_sweep_pixel_delay_84_req;
+    rt_cam_sweep_pixel_delay_85_eol <= rt_cam_sweep_pixel_delay_84_eol;
+    rt_cam_sweep_pixel_delay_85_eof <= rt_cam_sweep_pixel_delay_84_eof;
+    rt_cam_sweep_pixel_delay_85_pixel_r <= rt_cam_sweep_pixel_delay_84_pixel_r;
+    rt_cam_sweep_pixel_delay_85_pixel_g <= rt_cam_sweep_pixel_delay_84_pixel_g;
+    rt_cam_sweep_pixel_delay_85_pixel_b <= rt_cam_sweep_pixel_delay_84_pixel_b;
+    rt_cam_sweep_pixel_delay_86_vsync <= rt_cam_sweep_pixel_delay_85_vsync;
+    rt_cam_sweep_pixel_delay_86_req <= rt_cam_sweep_pixel_delay_85_req;
+    rt_cam_sweep_pixel_delay_86_eol <= rt_cam_sweep_pixel_delay_85_eol;
+    rt_cam_sweep_pixel_delay_86_eof <= rt_cam_sweep_pixel_delay_85_eof;
+    rt_cam_sweep_pixel_delay_86_pixel_r <= rt_cam_sweep_pixel_delay_85_pixel_r;
+    rt_cam_sweep_pixel_delay_86_pixel_g <= rt_cam_sweep_pixel_delay_85_pixel_g;
+    rt_cam_sweep_pixel_delay_86_pixel_b <= rt_cam_sweep_pixel_delay_85_pixel_b;
+    rt_cam_sweep_pixel_delay_87_vsync <= rt_cam_sweep_pixel_delay_86_vsync;
+    rt_cam_sweep_pixel_delay_87_req <= rt_cam_sweep_pixel_delay_86_req;
+    rt_cam_sweep_pixel_delay_87_eol <= rt_cam_sweep_pixel_delay_86_eol;
+    rt_cam_sweep_pixel_delay_87_eof <= rt_cam_sweep_pixel_delay_86_eof;
+    rt_cam_sweep_pixel_delay_87_pixel_r <= rt_cam_sweep_pixel_delay_86_pixel_r;
+    rt_cam_sweep_pixel_delay_87_pixel_g <= rt_cam_sweep_pixel_delay_86_pixel_g;
+    rt_cam_sweep_pixel_delay_87_pixel_b <= rt_cam_sweep_pixel_delay_86_pixel_b;
+    rt_cam_sweep_pixel_delayed_vsync <= rt_cam_sweep_pixel_delay_87_vsync;
+    rt_cam_sweep_pixel_delayed_req <= rt_cam_sweep_pixel_delay_87_req;
+    rt_cam_sweep_pixel_delayed_eol <= rt_cam_sweep_pixel_delay_87_eol;
+    rt_cam_sweep_pixel_delayed_eof <= rt_cam_sweep_pixel_delay_87_eof;
+    rt_cam_sweep_pixel_delayed_pixel_r <= rt_cam_sweep_pixel_delay_87_pixel_r;
+    rt_cam_sweep_pixel_delayed_pixel_g <= rt_cam_sweep_pixel_delay_87_pixel_g;
+    rt_cam_sweep_pixel_delayed_pixel_b <= rt_cam_sweep_pixel_delay_87_pixel_b;
+  end
+
+  always @ (posedge clk) begin
+    rt_sphere_center_x_regNext_sign <= rt_sphere_center_x_sign;
+    rt_sphere_center_x_regNext_exp <= rt_sphere_center_x_exp;
+    rt_sphere_center_x_regNext_mant <= rt_sphere_center_x_mant;
+    rt_sphere_center_y_regNext_sign <= rt_sphere_center_y_sign;
+    rt_sphere_center_y_regNext_exp <= rt_sphere_center_y_exp;
+    rt_sphere_center_y_regNext_mant <= rt_sphere_center_y_mant;
   end
 
 endmodule

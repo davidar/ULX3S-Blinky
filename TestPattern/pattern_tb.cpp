@@ -24,7 +24,7 @@ int	main(int argc, char **argv) {
 		tb->tick();
 		if (tb->m_core->i_pixclk &&
 				(tb->m_core->i_pixclk != oldpixclk)) {
-		  if (tb->m_core->o_rd) {
+		  if (tb->m_core->o_de) {
 		    printf("%d %d %d\n",
 			tb->m_core->red,
 			tb->m_core->grn,

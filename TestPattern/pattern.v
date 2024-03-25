@@ -7,15 +7,16 @@ module pattern(
   output [7:0] grn,
   output [7:0] blu,
   output o_rd,
+  output o_de,
 	output [9:0] o_TMDS_red,
   output [9:0] o_TMDS_grn,
   output [9:0] o_TMDS_blu
   );
 
-  wire [23:0] pixel;
-  assign red= pixel[23:16];
-  assign grn= pixel[15:8];
-  assign blu= pixel[7:0];
+  // wire [23:0] pixel;
+  // assign red= pixel[23:16];
+  // assign grn= pixel[15:8];
+  // assign blu= pixel[7:0];
 
 /* verilator lint_off UNUSED */
   wire o_red;
@@ -64,17 +65,38 @@ module pattern(
   // module PanoCore (
   //     input  [11:0] io_pix_x,
   //     input  [10:0] io_pix_y,
-  //     output [7:0] io_pixel_out_r,
-  //     output [7:0] io_pixel_out_g,
-  //     output [7:0] io_pixel_out_b,
+  //     input   io_pixel_in_vsync,
+  //     input   io_pixel_in_req,
+  //     input   io_pixel_in_eol,
+  //     input   io_pixel_in_eof,
+  //     input  [7:0] io_pixel_in_pixel_r,
+  //     input  [7:0] io_pixel_in_pixel_g,
+  //     input  [7:0] io_pixel_in_pixel_b,
+  //     output  io_pixel_out_vsync,
+  //     output  io_pixel_out_req,
+  //     output  io_pixel_out_eol,
+  //     output  io_pixel_out_eof,
+  //     output [7:0] io_pixel_out_pixel_r,
+  //     output [7:0] io_pixel_out_pixel_g,
+  //     output [7:0] io_pixel_out_pixel_b,
   //     input   clk,
   //     input   reset);
   PanoCore PanoCore_instance(
-    .io_pix_x(hcount),
-    .io_pix_y(480 - vcount - 1),
-    .io_pixel_out_r(pixel[23:16]),
-    .io_pixel_out_g(pixel[15:8]),
-    .io_pixel_out_b(pixel[7:0]),
+    .io_pix_x(hcount - 320),
+    .io_pix_y(240 - vcount),
+    .io_pixel_in_vsync(hcount == 0 && vcount == 0),
+    .io_pixel_in_req(o_rd),
+    // io.pixel_out.eol    := pixel_active ? last_col                | False
+    .io_pixel_in_eol(o_rd && hcount == 639),
+    // io.pixel_out.eof    := pixel_active ? (last_col && last_line) | False
+    .io_pixel_in_eof(o_rd && hcount == 639 && vcount == 479),
+    .io_pixel_in_pixel_r(0),
+    .io_pixel_in_pixel_g(255),
+    .io_pixel_in_pixel_b(0),
+    .io_pixel_out_req(o_de),
+    .io_pixel_out_pixel_r(red),
+    .io_pixel_out_pixel_g(grn),
+    .io_pixel_out_pixel_b(blu),
     .clk(i_pixclk),
     .reset(reset)
   );
